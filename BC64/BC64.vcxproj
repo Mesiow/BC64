@@ -141,11 +141,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\C64.c" />
     <ClCompile Include="Core\Memory.c" />
     <ClCompile Include="Core\Util.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\C64.h" />
     <ClInclude Include="Core\Memory.h" />
     <ClInclude Include="Core\Util.h" />
   </ItemGroup>

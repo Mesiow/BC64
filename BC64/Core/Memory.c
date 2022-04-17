@@ -1,14 +1,27 @@
 #include "Memory.h"
 
-void memInit(struct Memory* mem)
+void mem_init(struct Memory* mem)
 {
+	mem->ram = malloc(0x10000 * sizeof(u8));
+	mem->kernal = malloc(0x2000 * sizeof(u8));
+	mem->basic_int = malloc(0x2000 * sizeof(u8));
+
 	memset(mem->kernal, 0x0, 0x2000);
 	memset(mem->basic_int, 0x0, 0x2000);
 	memset(mem->chr1, 0x0, 0x800);
 	memset(mem->chr2, 0x0, 0x800);
 }
 
-void memLoadFirmware(struct Memory* mem, const char* path)
+void mem_free(struct Memory* mem)
+{
+	if (mem != NULL) {
+		if (mem->ram != NULL) free(mem->ram);
+		if (mem->kernal != NULL) free(mem->kernal);
+		if (mem->basic_int != NULL) free(mem->basic_int);
+	}
+}
+
+void mem_load_firmware(struct Memory* mem, const char* path)
 {
 	//Load kernal and basic interpreter
 	FILE* file = fopen(path, "rb");
@@ -39,17 +52,17 @@ void memLoadFirmware(struct Memory* mem, const char* path)
 	}
 }
 
-void memLoadChrRom(struct Memory* mem, const char* path)
+void mem_load_chrrom(struct Memory* mem, const char* path)
 {
 	//load both 2k character sets
 }
 
-void memWriteU8(struct Memory* mem, u16 address, u8 value)
+void mem_write_u8(struct Memory* mem, u16 address, u8 value)
 {
 
 }
 
-u8 memReadU8(struct Memory* mem, u16 address)
+u8 mem_read_u8(struct Memory* mem, u16 address)
 {
 	if (address >= 0xA000 && address <= 0xBFFF) {
 		return mem->basic_int[address & 0x1FFF];

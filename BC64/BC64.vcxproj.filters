@@ -24,12 +24,18 @@
     <ClCompile Include="Core\Memory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\C64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\C64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

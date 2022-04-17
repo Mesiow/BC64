@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include "Core\Memory.h"
+#include "Core/C64.h"
 
 int main(void) {
 
-	struct Memory mem;
-	memLoadFirmware(&mem, "Software/c64_kernal_basic.bin");
+	struct C64 c64;
+	c64_init(&c64);
 
 	return 0;
 }
