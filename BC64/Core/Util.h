@@ -12,6 +12,6 @@ typedef signed int s32;
 
 //Returns number of set bits in value
 u8 popcount(u8 value);
-u8 setBit(u8 val, u8 bit);
-u8 clearBit(u8 val, u8 bit);
-u8 testBit(u8 val, u8 bit);
+u8 set_bit(u8 val, u8 bit);
+u8 clear_bit(u8 val, u8 bit);
+u8 test_bit(u8 val, u8 bit);
