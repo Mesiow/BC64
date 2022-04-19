@@ -21,9 +21,35 @@ struct Cpu6510 {
 	u8 sr;
 	u16 sp;
 	u16 pc;
+
+	struct Memory* mem;
 };
 
 void cpu_init(struct Cpu6510* cpu);
 void cpu_set_flag(struct Cpu6510 *cpu, u8 flags);
 void cpu_clear_flag(struct Cpu6510* cpu, u8 flags);
 void cpu_affect_flag(struct Cpu6510* cpu, u8 condition, u8 flags);
+
+void cpu_write_mem_u8(struct Cpu6510* cpu, u8 value, u16 address);
+
+u16 cpu_fetch_u16(struct Cpu6510* cpu);
+u16 cpu_read_u16(struct Cpu6510* cpu, u16 address);
+u8 cpu_fetch_u8(struct Cpu6510* cpu);
+u8 cpu_read_u8(struct Cpu6510* cpu, u16 address);
+
+u8 cpu_clock(struct Cpu6510* cpu);
+void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
+
+//instructions
+void brk(struct Cpu6510* cpu);
+void jsr(struct Cpu6510* cpu);
+void rts(struct Cpu6510* cpu);
+
+void php(struct Cpu6510* cpu);
+void plp(struct Cpu6510* cpu);
+
+
+void push_u16(struct Cpu6510* cpu, u16 value);
+void push_u8(struct Cpu6510* cpu, u8 value);
+void pop_u16(struct Cpu6510* cpu, u16 *reg);
+void pop_u8(struct Cpu6510* cpu, u8* reg);
