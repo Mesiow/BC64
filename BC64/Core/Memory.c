@@ -57,7 +57,7 @@ void mem_load_chrrom(struct Memory* mem, const char* path)
 	//load both 2k character sets
 }
 
-void mem_write_u8(struct Memory* mem, u16 address, u8 value)
+void mem_write_u8(struct Memory* mem, u8 value, u16 address)
 {
 
 }

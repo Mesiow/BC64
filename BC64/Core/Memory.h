@@ -33,5 +33,5 @@ void mem_init(struct Memory* mem);
 void mem_free(struct Memory* mem);
 void mem_load_firmware(struct Memory* mem, const char* path);
 void mem_load_chrrom(struct Memory* mem, const char* path);
-void mem_write_u8(struct Memory* mem, u16 address, u8 value);
+void mem_write_u8(struct Memory* mem, u8 value, u16 address);
 u8 mem_read_u8(struct Memory* mem, u16 address);
