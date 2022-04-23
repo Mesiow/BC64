@@ -84,23 +84,26 @@ u8 cpu_read_u8(struct Cpu6510* cpu, u16 address)
 u8 cpu_clock(struct Cpu6510* cpu)
 {
 	u8 opcode = cpu_read_u8(cpu, cpu->pc++);
-	u8 addr_mode_result = addr_mode_lookup[opcode];
 	u8 cycles = cyc_lookup[opcode];
 
-	cpu_execute_instruction(cpu, opcode, addr_mode_result);
+	cpu_execute_instruction(cpu, opcode);
 
 	return cycles;
 }
 
-void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode, u8 addr_mode_result)
+void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 {
 	switch (opcode) {
 		case 0x00: brk(cpu); break;
-		case 0x01: ora(cpu, addr_mode_result); break;
-		case 0x05: ora(cpu, addr_mode_result); break;
+		case 0x01: ora_indir_x(cpu); break;
+		case 0x05: ora_zpg(cpu, zeropage(cpu)); break;
 		case 0x08: php(cpu); break;
-		case 0x09: ora(cpu, addr_mode_result); break;
-		case 0x0D: ora(cpu, addr_mode_result); break;
+		case 0x09: ora_imm(cpu); break;
+		case 0x0D: ora_abs(cpu, absolute(cpu)); break;
+		case 0x11: ora_indir_y(cpu); break;
+		case 0x15: ora_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x19: ora_abs(cpu, absolute_y(cpu)); break;
+		case 0x1D: ora_abs(cpu, absolute_x(cpu)); break;
 		case 0x20: jsr(cpu); break;
 		case 0x60: rts(cpu); break;
 	}
@@ -144,13 +147,39 @@ void plp(struct Cpu6510* cpu)
 	cpu->sr &= 0xCF; //break flag and bit 5 ignored
 }
 
-void ora(struct Cpu6510* cpu, u8 addr_mode_result)
+void ora(struct Cpu6510* cpu, u8 value)
 {
-	u8 result = cpu->acc | addr_mode_result;
-	cpu->acc |= addr_mode_result;
+	u8 result = cpu->acc | value;
+	cpu->acc |= value;
 
 	cpu_affect_flag(cpu, result == 0, FLAG_Z);
 	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+}
+
+void ora_imm(struct Cpu6510* cpu)
+{
+	ora(cpu, immediate(cpu));
+}
+
+void ora_zpg(struct Cpu6510* cpu, u8 zpg_value)
+{
+	ora(cpu, zpg_value);
+}
+
+void ora_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	ora(cpu, value);
+}
+
+void ora_indir_x(struct Cpu6510* cpu)
+{
+	ora(cpu, indirect_x(cpu));
+}
+
+void ora_indir_y(struct Cpu6510* cpu)
+{
+	ora(cpu, indirect_y(cpu));
 }
 
 u8 immediate(struct Cpu6510* cpu)
@@ -166,9 +195,37 @@ u8 zeropage(struct Cpu6510* cpu)
 	return value;
 }
 
-u8 absolute(struct Cpu6510* cpu)
+u8 zeropage_x(struct Cpu6510* cpu)
+{
+	u8 zeropage_addr = cpu_fetch_u8(cpu) + cpu->x;
+	u8 value = cpu_read_u8(cpu, zeropage_addr);
+
+	return value;
+}
+
+u8 zeropage_y(struct Cpu6510* cpu)
+{
+	u8 zeropage_addr = cpu_fetch_u8(cpu) + cpu->y;
+	u8 value = cpu_read_u8(cpu, zeropage_addr);
+
+	return value;
+}
+
+u16 absolute(struct Cpu6510* cpu)
 {
 	return cpu_fetch_u16(cpu);
+}
+
+u16 absolute_x(struct Cpu6510* cpu)
+{
+	u16 address = cpu_fetch_u16(cpu) + cpu->x;
+	return address;
+}
+
+u16 absolute_y(struct Cpu6510* cpu)
+{
+	u16 address = cpu_fetch_u16(cpu) + cpu->y;
+	return address;
 }
 
 u8 indirect_x(struct Cpu6510* cpu)
@@ -177,6 +234,16 @@ u8 indirect_x(struct Cpu6510* cpu)
 	u8 vector = cpu->x + zeropage_addr;
 
 	u16 effective_address = cpu_read_u16(cpu, vector);
+	u8 value = cpu_read_u8(cpu, effective_address);
+
+	return value;
+}
+
+u8 indirect_y(struct Cpu6510* cpu)
+{
+	u8 zeropage_vector = cpu_fetch_u8(cpu);
+	u16 effective_address = cpu_read_u16(cpu, zeropage_vector) + cpu->y;
+
 	u8 value = cpu_read_u8(cpu, effective_address);
 
 	return value;

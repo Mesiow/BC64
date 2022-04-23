@@ -12,19 +12,6 @@
 #define NMI_VECTOR 0xFFFA
 #define IRQ_VECTOR 0xFFFE
 
-enum AddressingMode {
-	Imm = 0,
-	Abs,
-	Abs_X,
-	Abs_Y,
-	Zeropage,
-	Zeropage_X,
-	Indirect_X,
-	Indirect_Y
-};
-
-//The c64 uses a MOS 6510 cpu (similar to the 6502)
-
 struct Cpu6510 {
 	u8 acc;
 	u8 x;
@@ -50,7 +37,7 @@ u8 cpu_fetch_u8(struct Cpu6510* cpu);
 u8 cpu_read_u8(struct Cpu6510* cpu, u16 address);
 
 u8 cpu_clock(struct Cpu6510* cpu);
-void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode, u8 addr_mode_result);
+void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
 
 //instructions
 void brk(struct Cpu6510* cpu);
@@ -59,13 +46,23 @@ void rts(struct Cpu6510* cpu);
 void php(struct Cpu6510* cpu);
 void plp(struct Cpu6510* cpu);
 
-void ora(struct Cpu6510* cpu, u8 addr_mode_result);
+void ora(struct Cpu6510* cpu, u8 value);
+void ora_imm(struct Cpu6510* cpu);
+void ora_zpg(struct Cpu6510* cpu, u8 zpg_value);
+void ora_abs(struct Cpu6510* cpu, u16 abs_address);
+void ora_indir_x(struct Cpu6510* cpu);
+void ora_indir_y(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);
 u8 zeropage(struct Cpu6510* cpu);
-u8 absolute(struct Cpu6510* cpu);
+u8 zeropage_x(struct Cpu6510* cpu);
+u8 zeropage_y(struct Cpu6510* cpu);
+u16 absolute(struct Cpu6510* cpu);
+u16 absolute_x(struct Cpu6510* cpu);
+u16 absolute_y(struct Cpu6510* cpu);
 u8 indirect_x(struct Cpu6510* cpu);
+u8 indirect_y(struct Cpu6510* cpu);
 
 
 void push_u16(struct Cpu6510* cpu, u16 value);
