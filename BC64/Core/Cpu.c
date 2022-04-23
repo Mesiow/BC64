@@ -6,12 +6,6 @@ static u8 cyc_lookup[0x100] = {
 
 };
 
-//addressing mode func ptrs for each instruction
-u8 (*addr_mode_lookup[0x100])(struct Cpu6510*) = {
-	NULL, indirect_x, NULL, NULL, NULL, zeropage, NULL, NULL, NULL, immediate, NULL, NULL, NULL, absolute, absolute, NULL,
-
-};
-
 void cpu_init(struct Cpu6510* cpu)
 {
 	cpu->acc = 0x0;
@@ -20,6 +14,8 @@ void cpu_init(struct Cpu6510* cpu)
 	cpu->sr = 0x0;
 	cpu->sp = 0x1FF; //stack lives at 0x100 - 0x1FF
 	cpu->pc = RESET_VECTOR;
+
+	cpu->cycles = 0;
 }
 
 void cpu_set_flag(struct Cpu6510* cpu, u8 flags)
@@ -45,6 +41,12 @@ void cpu_affect_flag(struct Cpu6510* cpu, u8 condition, u8 flags)
 void cpu_write_mem_u8(struct Cpu6510* cpu, u8 value, u16 address)
 {
 	mem_write_u8(cpu->mem, value, address);
+}
+
+u8 cpu_get_flag(struct Cpu6510* cpu, u8 flag)
+{
+	u8 mask = (cpu->sr & flag);
+	return (mask ? 1 : 0);
 }
 
 u8 cpu_is_signed(u8 value)
@@ -99,6 +101,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x05: ora_zpg(cpu, zeropage(cpu)); break;
 		case 0x08: php(cpu); break;
 		case 0x09: ora_imm(cpu); break;
+		case 0x10: bpl(cpu); break;
 		case 0x0D: ora_abs(cpu, absolute(cpu)); break;
 		case 0x11: ora_indir_y(cpu); break;
 		case 0x15: ora_zpg(cpu, zeropage_x(cpu)); break;
@@ -180,6 +183,18 @@ void ora_indir_x(struct Cpu6510* cpu)
 void ora_indir_y(struct Cpu6510* cpu)
 {
 	ora(cpu, indirect_y(cpu));
+}
+
+void bpl(struct Cpu6510* cpu)
+{
+	if (cpu_get_flag(cpu, FLAG_N)) {
+		s8 offset = (s8)cpu_fetch_u8(cpu);
+		cpu->pc += offset;
+		cpu->cycles += 1;
+	}
+	else {
+		cpu->pc++;
+	}
 }
 
 u8 immediate(struct Cpu6510* cpu)

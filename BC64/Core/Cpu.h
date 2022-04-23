@@ -20,6 +20,7 @@ struct Cpu6510 {
 	u16 sp;
 	u16 pc;
 
+	u8 cycles;
 	struct Memory* mem;
 };
 
@@ -28,7 +29,7 @@ void cpu_set_flag(struct Cpu6510 *cpu, u8 flags);
 void cpu_clear_flag(struct Cpu6510* cpu, u8 flags);
 void cpu_affect_flag(struct Cpu6510* cpu, u8 condition, u8 flags);
 void cpu_write_mem_u8(struct Cpu6510* cpu, u8 value, u16 address);
-
+u8 cpu_get_flag(struct Cpu6510* cpu, u8 flag);
 u8 cpu_is_signed(u8 value);
 
 u16 cpu_fetch_u16(struct Cpu6510* cpu);
@@ -52,6 +53,8 @@ void ora_zpg(struct Cpu6510* cpu, u8 zpg_value);
 void ora_abs(struct Cpu6510* cpu, u16 abs_address);
 void ora_indir_x(struct Cpu6510* cpu);
 void ora_indir_y(struct Cpu6510* cpu);
+
+void bpl(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);
