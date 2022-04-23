@@ -12,6 +12,17 @@
 #define NMI_VECTOR 0xFFFA
 #define IRQ_VECTOR 0xFFFE
 
+enum AddressingMode {
+	Imm = 0,
+	Abs,
+	Abs_X,
+	Abs_Y,
+	Zeropage,
+	Zeropage_X,
+	Indirect_X,
+	Indirect_Y
+};
+
 //The c64 uses a MOS 6510 cpu (similar to the 6502)
 
 struct Cpu6510 {
@@ -29,8 +40,9 @@ void cpu_init(struct Cpu6510* cpu);
 void cpu_set_flag(struct Cpu6510 *cpu, u8 flags);
 void cpu_clear_flag(struct Cpu6510* cpu, u8 flags);
 void cpu_affect_flag(struct Cpu6510* cpu, u8 condition, u8 flags);
-
 void cpu_write_mem_u8(struct Cpu6510* cpu, u8 value, u16 address);
+
+u8 cpu_is_signed(u8 value);
 
 u16 cpu_fetch_u16(struct Cpu6510* cpu);
 u16 cpu_read_u16(struct Cpu6510* cpu, u16 address);
@@ -38,15 +50,22 @@ u8 cpu_fetch_u8(struct Cpu6510* cpu);
 u8 cpu_read_u8(struct Cpu6510* cpu, u16 address);
 
 u8 cpu_clock(struct Cpu6510* cpu);
-void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
+void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode, u8 addr_mode_result);
 
 //instructions
 void brk(struct Cpu6510* cpu);
 void jsr(struct Cpu6510* cpu);
 void rts(struct Cpu6510* cpu);
-
 void php(struct Cpu6510* cpu);
 void plp(struct Cpu6510* cpu);
+
+void ora(struct Cpu6510* cpu, u8 addr_mode_result);
+
+//addressing modes
+u8 immediate(struct Cpu6510* cpu);
+u8 zeropage(struct Cpu6510* cpu);
+u8 absolute(struct Cpu6510* cpu);
+u8 indirect_x(struct Cpu6510* cpu);
 
 
 void push_u16(struct Cpu6510* cpu, u16 value);
