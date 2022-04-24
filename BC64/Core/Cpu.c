@@ -55,6 +55,32 @@ u8 cpu_is_signed(u8 value)
 	return (((signed_value >> 7) & 0x1) == 0x1);
 }
 
+u8 cpu_overflow_from_add_u8(u8 op1, u8 op2, u8 carry)
+{
+	u8 total = (op1 + op2 + carry) & 0xFF;
+	//check if sign are same and if they are, ~(op1 ^ op2) will evaluate to 1
+	//then check results sign and then and them together and determine overflow by the msb
+	return (~(op1 ^ op2) & ((op1 ^ total))) >> 7;
+}
+
+u8 cpu_overflow_from_sub_u8(u8 op1, u8 op2, u8 carry)
+{
+	u8 total = (op1 - op2 - carry) & 0xFF;
+	//first check if both operands have a different sign,
+	//then check if the result has the same sign as the second operand
+	return (((s8)(op1 ^ op2) < 0) && ((s8)(op2 ^ total) >= 0));
+}
+
+u8 cpu_carry_occured_u8(u8 op1, u8 op2, u8 carry)
+{
+	return (((op1 & 0xFF) + (op2 & 0xFF) + (carry)) > 0xFF);
+}
+
+u8 cpu_borrow_occured_u8(u8 op1, u8 op2, u8 carry)
+{
+	return ((op2 + carry) > op1);
+}
+
 u16 cpu_fetch_u16(struct Cpu6510* cpu)
 {
 	u8 lo = mem_read_u8(cpu->mem, cpu->pc++);
@@ -99,14 +125,19 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x00: brk(cpu); break;
 		case 0x01: ora_indir_x(cpu); break;
 		case 0x05: ora_zpg(cpu, zeropage(cpu)); break;
+		case 0x06: asl_zpg(cpu, zeropage(cpu)); break;
 		case 0x08: php(cpu); break;
 		case 0x09: ora_imm(cpu); break;
-		case 0x10: bpl(cpu); break;
+		case 0x0A: asla(cpu); break;
 		case 0x0D: ora_abs(cpu, absolute(cpu)); break;
+		case 0x0E: asl_abs(cpu, absolute(cpu)); break;
+		case 0x10: bpl(cpu); break;
 		case 0x11: ora_indir_y(cpu); break;
 		case 0x15: ora_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x16: asl_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x19: ora_abs(cpu, absolute_y(cpu)); break;
 		case 0x1D: ora_abs(cpu, absolute_x(cpu)); break;
+		case 0x1E: asl_abs(cpu, absolute_x(cpu)); break;
 		case 0x20: jsr(cpu); break;
 		case 0x60: rts(cpu); break;
 	}
@@ -164,9 +195,10 @@ void ora_imm(struct Cpu6510* cpu)
 	ora(cpu, immediate(cpu));
 }
 
-void ora_zpg(struct Cpu6510* cpu, u8 zpg_value)
+void ora_zpg(struct Cpu6510* cpu, u8 zpg_address)
 {
-	ora(cpu, zpg_value);
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	ora(cpu, value);
 }
 
 void ora_abs(struct Cpu6510* cpu, u16 abs_address)
@@ -183,6 +215,39 @@ void ora_indir_x(struct Cpu6510* cpu)
 void ora_indir_y(struct Cpu6510* cpu)
 {
 	ora(cpu, indirect_y(cpu));
+}
+
+void asl(struct Cpu6510* cpu, u8 *value)
+{
+	u8 msb = (*value) >> 7;
+	u8 result = (*value) << 1;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+	cpu_affect_flag(cpu, msb, FLAG_C);
+
+	*value <<= 1;
+}
+
+void asl_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	asl(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, abs_address);
+}
+
+void asl_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	asl(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, zpg_address);
+}
+
+void asla(struct Cpu6510* cpu)
+{
+	asl(cpu, &cpu->acc);
 }
 
 void bpl(struct Cpu6510* cpu)
@@ -205,25 +270,19 @@ u8 immediate(struct Cpu6510* cpu)
 u8 zeropage(struct Cpu6510* cpu)
 {
 	u8 zeropage_addr = cpu_fetch_u8(cpu);
-	u8 value = cpu_read_u8(cpu, zeropage_addr);
-
-	return value;
+	return zeropage_addr;
 }
 
 u8 zeropage_x(struct Cpu6510* cpu)
 {
 	u8 zeropage_addr = cpu_fetch_u8(cpu) + cpu->x;
-	u8 value = cpu_read_u8(cpu, zeropage_addr);
-
-	return value;
+	return zeropage_addr;
 }
 
 u8 zeropage_y(struct Cpu6510* cpu)
 {
 	u8 zeropage_addr = cpu_fetch_u8(cpu) + cpu->y;
-	u8 value = cpu_read_u8(cpu, zeropage_addr);
-
-	return value;
+	return zeropage_addr;
 }
 
 u16 absolute(struct Cpu6510* cpu)
