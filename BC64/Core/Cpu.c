@@ -144,14 +144,17 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x24: bit_zpg(cpu, zeropage(cpu)); break;
 		case 0x25: and_zpg(cpu, zeropage(cpu)); break;
 		case 0x26: rol_zpg(cpu, zeropage(cpu)); break;
+		case 0x28: plp(cpu); break;
 		case 0x29: and_imm(cpu); break;
 		case 0x2A: rola(cpu); break;
 		case 0x2C: bit_abs(cpu, absolute(cpu)); break;
 		case 0x2D: and_abs(cpu, absolute(cpu)); break;
 		case 0x2E: rol_abs(cpu, absolute(cpu)); break;
+		case 0x30: bmi(cpu); break;
 		case 0x31: and_indir_y(cpu); break;
 		case 0x35: and_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x36: rol_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x38: sec(cpu); break;
 		case 0x39: and_abs(cpu, absolute_y(cpu)); break;
 		case 0x3D: and_abs(cpu, absolute_x(cpu)); break;
 		case 0x3E: rol_abs(cpu, absolute_x(cpu)); break;
@@ -370,10 +373,34 @@ void rola(struct Cpu6510* cpu)
 
 void bpl(struct Cpu6510* cpu)
 {
-	if (cpu_get_flag(cpu, FLAG_N)) {
+	if (cpu_get_flag(cpu, FLAG_N) == 0) {
 		s8 offset = (s8)cpu_fetch_u8(cpu);
+
+		u16 prev_addr = cpu->pc;
 		cpu->pc += offset;
 		cpu->cycles += 1;
+
+		//if we crossed a page boundary add a cycle
+		if ((cpu->pc & 0xFF00) != (prev_addr & 0xFF00))
+			cpu->cycles += 1;
+	}
+	else {
+		cpu->pc++;
+	}
+}
+
+void bmi(struct Cpu6510* cpu)
+{
+	if (cpu_get_flag(cpu, FLAG_N)) {
+		s8 offset = (s8)cpu_fetch_u8(cpu);
+
+		u16 prev_addr = cpu->pc;
+		cpu->pc += offset;
+		cpu->cycles += 1;
+
+		//if we crossed a page boundary add a cycle
+		if ((cpu->pc & 0xFF00) != (prev_addr & 0xFF00))
+			cpu->cycles += 1;
 	}
 	else {
 		cpu->pc++;
@@ -383,6 +410,11 @@ void bpl(struct Cpu6510* cpu)
 void clc(struct Cpu6510* cpu)
 {
 	cpu_clear_flag(cpu, FLAG_C);
+}
+
+void sec(struct Cpu6510* cpu)
+{
+	cpu_set_flag(cpu, FLAG_C);
 }
 
 u8 immediate(struct Cpu6510* cpu)
