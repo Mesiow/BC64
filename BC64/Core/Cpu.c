@@ -140,7 +140,19 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x1D: ora_abs(cpu, absolute_x(cpu)); break;
 		case 0x1E: asl_abs(cpu, absolute_x(cpu)); break;
 		case 0x20: jsr(cpu); break;
+		case 0x21: and_indir_x(cpu); break;
+		case 0x25: and_zpg(cpu, zeropage(cpu)); break;
+		case 0x29: and_imm(cpu); break;
+		case 0x2D: and_abs(cpu, absolute(cpu)); break;
+		case 0x31: and_indir_y(cpu); break;
+		case 0x35: and_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x39: and_abs(cpu, absolute_y(cpu)); break;
+		case 0x3D: and_abs(cpu, absolute_x(cpu)); break;
 		case 0x60: rts(cpu); break;
+
+		default:
+			printf("Unimplemented instruction: 0x%02X\n", opcode);
+			break;
 	}
 }
 
@@ -187,8 +199,8 @@ void ora(struct Cpu6510* cpu, u8 value)
 	u8 result = cpu->acc | value;
 	cpu->acc |= value;
 
-	cpu_affect_flag(cpu, result == 0, FLAG_Z);
 	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
 }
 
 void ora_imm(struct Cpu6510* cpu)
@@ -249,6 +261,42 @@ void asl_zpg(struct Cpu6510* cpu, u8 zpg_address)
 void asla(struct Cpu6510* cpu)
 {
 	asl(cpu, &cpu->acc);
+}
+
+void and(struct Cpu6510* cpu, u8 value)
+{
+	u8 result = cpu->acc & value;
+	cpu->acc &= value;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+}
+
+void and_imm(struct Cpu6510* cpu)
+{
+	and(cpu, immediate(cpu));
+}
+
+void and_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	and(cpu, value);
+}
+
+void and_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	and (cpu, value);
+}
+
+void and_indir_x(struct Cpu6510* cpu)
+{
+	and(cpu, indirect_x(cpu));
+}
+
+void and_indir_y(struct Cpu6510* cpu)
+{
+	and(cpu, indirect_y(cpu));
 }
 
 void bpl(struct Cpu6510* cpu)

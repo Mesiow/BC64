@@ -66,6 +66,13 @@ void asl_abs(struct Cpu6510* cpu, u16 abs_address);
 void asl_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void asla(struct Cpu6510* cpu);
 
+void and(struct Cpu6510* cpu, u8 value);
+void and_imm(struct Cpu6510* cpu);
+void and_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void and_abs(struct Cpu6510* cpu, u16 abs_address);
+void and_indir_x(struct Cpu6510* cpu);
+void and_indir_y(struct Cpu6510* cpu);
+
 void bpl(struct Cpu6510* cpu);
 void clc(struct Cpu6510* cpu);
 
