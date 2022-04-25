@@ -90,6 +90,11 @@ void eor_abs(struct Cpu6510* cpu, u16 abs_address);
 void eor_indir_x(struct Cpu6510* cpu);
 void eor_indir_y(struct Cpu6510* cpu);
 
+void lsr(struct Cpu6510* cpu, u8* value);
+void lsr_abs(struct Cpu6510* cpu, u16 abs_address);
+void lsr_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void lsra(struct Cpu6510* cpu);
+
 void bpl(struct Cpu6510* cpu);
 void bmi(struct Cpu6510* cpu);
 void clc(struct Cpu6510* cpu);

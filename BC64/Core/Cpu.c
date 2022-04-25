@@ -161,12 +161,17 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x40: rti(cpu); break;
 		case 0x41: eor_indir_x(cpu); break;
 		case 0x45: eor_zpg(cpu, zeropage(cpu)); break;
+		case 0x46: lsr_zpg(cpu, zeropage(cpu)); break;
 		case 0x49: eor_imm(cpu); break;
+		case 0x4A: lsra(cpu); break;
 		case 0x4D: eor_abs(cpu, absolute(cpu)); break;
+		case 0x4E: lsr_abs(cpu, absolute(cpu)); break;
 		case 0x51: eor_indir_y(cpu); break;
 		case 0x55: eor_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x56: lsr_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x59: eor_abs(cpu, absolute_y(cpu)); break;
 		case 0x5D: eor_abs(cpu, absolute_x(cpu)); break;
+		case 0x5E: lsr_abs(cpu, absolute_x(cpu)); break;
 		case 0x60: rts(cpu); break;
 
 		default:
@@ -423,6 +428,42 @@ void eor_indir_x(struct Cpu6510* cpu)
 void eor_indir_y(struct Cpu6510* cpu)
 {
 	eor(cpu, indirect_y(cpu));
+}
+
+void lsr(struct Cpu6510* cpu, u8* value)
+{
+	u8 val = *value;
+
+	u8 lsb = val & 0x1;
+	u8 result = val >> 1;
+	val >>= 1;
+
+	cpu_clear_flag(cpu, FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+	cpu_affect_flag(cpu, lsb, FLAG_C);
+
+	*value = val;
+}
+
+void lsr_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	lsr(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, abs_address);
+}
+
+void lsr_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	lsr(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, zpg_address);
+}
+
+void lsra(struct Cpu6510* cpu)
+{
+	lsr(cpu, &cpu->acc);
 }
 
 void bpl(struct Cpu6510* cpu)
