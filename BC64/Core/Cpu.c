@@ -165,6 +165,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x48: pha(cpu); break;
 		case 0x49: eor_imm(cpu); break;
 		case 0x4A: lsra(cpu); break;
+		case 0x4C: jmp_abs(cpu); break;
 		case 0x4D: eor_abs(cpu, absolute(cpu)); break;
 		case 0x4E: lsr_abs(cpu, absolute(cpu)); break;
 		case 0x51: eor_indir_y(cpu); break;
@@ -174,6 +175,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x5D: eor_abs(cpu, absolute_x(cpu)); break;
 		case 0x5E: lsr_abs(cpu, absolute_x(cpu)); break;
 		case 0x60: rts(cpu); break;
+		case 0x6C: jmp_ind(cpu); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
@@ -231,6 +233,20 @@ void plp(struct Cpu6510* cpu)
 void pha(struct Cpu6510* cpu)
 {
 	push_u8(cpu, cpu->acc);
+}
+
+void jmp_abs(struct Cpu6510* cpu)
+{
+	u16 abs_address = absolute(cpu);
+	cpu->pc = abs_address;
+}
+
+void jmp_ind(struct Cpu6510* cpu)
+{
+	u16 address = cpu_fetch_u16(cpu);
+	u16 effective_address = cpu_read_u16(cpu, address);
+
+	cpu->pc = effective_address;
 }
 
 void ora(struct Cpu6510* cpu, u8 value)
