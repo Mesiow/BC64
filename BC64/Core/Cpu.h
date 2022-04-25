@@ -83,6 +83,13 @@ void rol_abs(struct Cpu6510* cpu, u16 abs_address);
 void rol_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void rola(struct Cpu6510* cpu);
 
+void eor(struct Cpu6510* cpu, u8 value);
+void eor_imm(struct Cpu6510* cpu);
+void eor_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void eor_abs(struct Cpu6510* cpu, u16 abs_address);
+void eor_indir_x(struct Cpu6510* cpu);
+void eor_indir_y(struct Cpu6510* cpu);
+
 void bpl(struct Cpu6510* cpu);
 void bmi(struct Cpu6510* cpu);
 void clc(struct Cpu6510* cpu);

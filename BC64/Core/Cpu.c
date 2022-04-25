@@ -159,6 +159,14 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x3D: and_abs(cpu, absolute_x(cpu)); break;
 		case 0x3E: rol_abs(cpu, absolute_x(cpu)); break;
 		case 0x40: rti(cpu); break;
+		case 0x41: eor_indir_x(cpu); break;
+		case 0x45: eor_zpg(cpu, zeropage(cpu)); break;
+		case 0x49: eor_imm(cpu); break;
+		case 0x4D: eor_abs(cpu, absolute(cpu)); break;
+		case 0x51: eor_indir_y(cpu); break;
+		case 0x55: eor_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x59: eor_abs(cpu, absolute_y(cpu)); break;
+		case 0x5D: eor_abs(cpu, absolute_x(cpu)); break;
 		case 0x60: rts(cpu); break;
 
 		default:
@@ -379,6 +387,42 @@ void rol_zpg(struct Cpu6510* cpu, u8 zpg_address)
 void rola(struct Cpu6510* cpu)
 {
 	rol(cpu, &cpu->acc);
+}
+
+void eor(struct Cpu6510* cpu, u8 value)
+{
+	u8 result = cpu->acc ^ value;
+	cpu->acc ^= value;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+}
+
+void eor_imm(struct Cpu6510* cpu)
+{
+	eor(cpu, immediate(cpu));
+}
+
+void eor_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	eor(cpu, value);
+}
+
+void eor_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	eor(cpu, value);
+}
+
+void eor_indir_x(struct Cpu6510* cpu)
+{
+	eor(cpu, indirect_x(cpu));
+}
+
+void eor_indir_y(struct Cpu6510* cpu)
+{
+	eor(cpu, indirect_y(cpu));
 }
 
 void bpl(struct Cpu6510* cpu)
