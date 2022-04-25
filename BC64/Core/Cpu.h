@@ -98,10 +98,10 @@ void lsr_abs(struct Cpu6510* cpu, u16 abs_address);
 void lsr_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void lsra(struct Cpu6510* cpu);
 
-void bpl(struct Cpu6510* cpu);
-void bmi(struct Cpu6510* cpu);
+void branch(struct Cpu6510* cpu, u8 condition);
 void clc(struct Cpu6510* cpu);
 void sec(struct Cpu6510* cpu);
+void cli(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);

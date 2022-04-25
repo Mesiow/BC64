@@ -131,7 +131,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x0A: asla(cpu); break;
 		case 0x0D: ora_abs(cpu, absolute(cpu)); break;
 		case 0x0E: asl_abs(cpu, absolute(cpu)); break;
-		case 0x10: bpl(cpu); break;
+		case 0x10: branch(cpu, cpu_get_flag(cpu, FLAG_N) == 0); break;
 		case 0x11: ora_indir_y(cpu); break;
 		case 0x15: ora_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x16: asl_zpg(cpu, zeropage_x(cpu)); break;
@@ -150,7 +150,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x2C: bit_abs(cpu, absolute(cpu)); break;
 		case 0x2D: and_abs(cpu, absolute(cpu)); break;
 		case 0x2E: rol_abs(cpu, absolute(cpu)); break;
-		case 0x30: bmi(cpu); break;
+		case 0x30: branch(cpu, cpu_get_flag(cpu, FLAG_N)); break;
 		case 0x31: and_indir_y(cpu); break;
 		case 0x35: and_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x36: rol_zpg(cpu, zeropage_x(cpu)); break;
@@ -171,6 +171,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x51: eor_indir_y(cpu); break;
 		case 0x55: eor_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x56: lsr_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x58: cli(cpu); break;
 		case 0x59: eor_abs(cpu, absolute_y(cpu)); break;
 		case 0x5D: eor_abs(cpu, absolute_x(cpu)); break;
 		case 0x5E: lsr_abs(cpu, absolute_x(cpu)); break;
@@ -488,27 +489,9 @@ void lsra(struct Cpu6510* cpu)
 	lsr(cpu, &cpu->acc);
 }
 
-void bpl(struct Cpu6510* cpu)
+void branch(struct Cpu6510* cpu, u8 condition)
 {
-	if (cpu_get_flag(cpu, FLAG_N) == 0) {
-		s8 offset = (s8)cpu_fetch_u8(cpu);
-
-		u16 prev_addr = cpu->pc;
-		cpu->pc += offset;
-		cpu->cycles += 1;
-
-		//if we crossed a page boundary add a cycle
-		if ((cpu->pc & 0xFF00) != (prev_addr & 0xFF00))
-			cpu->cycles += 1;
-	}
-	else {
-		cpu->pc++;
-	}
-}
-
-void bmi(struct Cpu6510* cpu)
-{
-	if (cpu_get_flag(cpu, FLAG_N)) {
+	if (condition) {
 		s8 offset = (s8)cpu_fetch_u8(cpu);
 
 		u16 prev_addr = cpu->pc;
@@ -532,6 +515,16 @@ void clc(struct Cpu6510* cpu)
 void sec(struct Cpu6510* cpu)
 {
 	cpu_set_flag(cpu, FLAG_C);
+}
+
+void cli(struct Cpu6510* cpu)
+{
+	cpu_clear_flag(cpu, FLAG_I);
+}
+
+void sei(struct Cpu6510* cpu)
+{
+	cpu_set_flag(cpu, FLAG_I);
 }
 
 u8 immediate(struct Cpu6510* cpu)
