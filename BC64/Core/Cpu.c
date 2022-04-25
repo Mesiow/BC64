@@ -143,13 +143,18 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x21: and_indir_x(cpu); break;
 		case 0x24: bit_zpg(cpu, zeropage(cpu)); break;
 		case 0x25: and_zpg(cpu, zeropage(cpu)); break;
+		case 0x26: rol_zpg(cpu, zeropage(cpu)); break;
 		case 0x29: and_imm(cpu); break;
+		case 0x2A: rola(cpu); break;
 		case 0x2C: bit_abs(cpu, absolute(cpu)); break;
 		case 0x2D: and_abs(cpu, absolute(cpu)); break;
+		case 0x2E: rol_abs(cpu, absolute(cpu)); break;
 		case 0x31: and_indir_y(cpu); break;
 		case 0x35: and_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x36: rol_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x39: and_abs(cpu, absolute_y(cpu)); break;
 		case 0x3D: and_abs(cpu, absolute_x(cpu)); break;
+		case 0x3E: rol_abs(cpu, absolute_x(cpu)); break;
 		case 0x60: rts(cpu); break;
 
 		default:
@@ -234,14 +239,17 @@ void ora_indir_y(struct Cpu6510* cpu)
 
 void asl(struct Cpu6510* cpu, u8 *value)
 {
-	u8 msb = (*value) >> 7;
-	u8 result = (*value) << 1;
+	u8 val = *value;
+
+	u8 msb = val >> 7;
+	u8 result = val << 1;
+	val <<= 1;
 
 	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
 	cpu_affect_flag(cpu, result == 0, FLAG_Z);
 	cpu_affect_flag(cpu, msb, FLAG_C);
 
-	*value <<= 1;
+	*value = val;
 }
 
 void asl_abs(struct Cpu6510* cpu, u16 abs_address)
@@ -321,6 +329,43 @@ void bit_abs(struct Cpu6510* cpu, u16 abs_address)
 {
 	u8 value = cpu_read_u8(cpu, abs_address);
 	bit(cpu, value);
+}
+
+void rol(struct Cpu6510* cpu, u8* value)
+{
+	u8 val = *value;
+
+	u8 msb = val >> 7;
+	u8 prev_carry = cpu_get_flag(cpu, FLAG_C);
+
+	val <<= 1;
+	val |= prev_carry;
+	*value = val;
+
+	cpu_affect_flag(cpu, cpu_is_signed(val), FLAG_N);
+	cpu_affect_flag(cpu, val == 0, FLAG_Z);
+	cpu_affect_flag(cpu, msb, FLAG_C);
+}
+
+void rol_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	rol(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, abs_address);
+}
+
+void rol_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	rol(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, zpg_address);
+}
+
+void rola(struct Cpu6510* cpu)
+{
+	rol(cpu, &cpu->acc);
 }
 
 void bpl(struct Cpu6510* cpu)

@@ -77,6 +77,11 @@ void bit(struct Cpu6510* cpu, u8 value);
 void bit_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void bit_abs(struct Cpu6510* cpu, u16 abs_address);
 
+void rol(struct Cpu6510* cpu, u8* value);
+void rol_abs(struct Cpu6510* cpu, u16 abs_address);
+void rol_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void rola(struct Cpu6510* cpu);
+
 void bpl(struct Cpu6510* cpu);
 void clc(struct Cpu6510* cpu);
 
