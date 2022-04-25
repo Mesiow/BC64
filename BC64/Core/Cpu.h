@@ -51,6 +51,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
 void brk(struct Cpu6510* cpu);
 void jsr(struct Cpu6510* cpu);
 void rts(struct Cpu6510* cpu);
+void rti(struct Cpu6510* cpu);
 void php(struct Cpu6510* cpu);
 void plp(struct Cpu6510* cpu);
 

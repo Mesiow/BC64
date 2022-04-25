@@ -158,6 +158,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x39: and_abs(cpu, absolute_y(cpu)); break;
 		case 0x3D: and_abs(cpu, absolute_x(cpu)); break;
 		case 0x3E: rol_abs(cpu, absolute_x(cpu)); break;
+		case 0x40: rti(cpu); break;
 		case 0x60: rts(cpu); break;
 
 		default:
@@ -186,6 +187,15 @@ void jsr(struct Cpu6510* cpu)
 
 void rts(struct Cpu6510* cpu)
 {
+	pop_u16(cpu, &cpu->pc);
+}
+
+void rti(struct Cpu6510* cpu)
+{
+	//pull sr
+	pop_u8(cpu, &cpu->sr);
+	cpu->sr &= 0xCF; //break flag and bit 5 ignored (similar to plp)
+
 	pop_u16(cpu, &cpu->pc);
 }
 
