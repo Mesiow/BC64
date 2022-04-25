@@ -73,6 +73,10 @@ void and_abs(struct Cpu6510* cpu, u16 abs_address);
 void and_indir_x(struct Cpu6510* cpu);
 void and_indir_y(struct Cpu6510* cpu);
 
+void bit(struct Cpu6510* cpu, u8 value);
+void bit_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void bit_abs(struct Cpu6510* cpu, u16 abs_address);
+
 void bpl(struct Cpu6510* cpu);
 void clc(struct Cpu6510* cpu);
 

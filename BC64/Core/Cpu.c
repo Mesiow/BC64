@@ -141,8 +141,10 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x1E: asl_abs(cpu, absolute_x(cpu)); break;
 		case 0x20: jsr(cpu); break;
 		case 0x21: and_indir_x(cpu); break;
+		case 0x24: bit_zpg(cpu, zeropage(cpu)); break;
 		case 0x25: and_zpg(cpu, zeropage(cpu)); break;
 		case 0x29: and_imm(cpu); break;
+		case 0x2C: bit_abs(cpu, absolute(cpu)); break;
 		case 0x2D: and_abs(cpu, absolute(cpu)); break;
 		case 0x31: and_indir_y(cpu); break;
 		case 0x35: and_zpg(cpu, zeropage_x(cpu)); break;
@@ -297,6 +299,28 @@ void and_indir_x(struct Cpu6510* cpu)
 void and_indir_y(struct Cpu6510* cpu)
 {
 	and(cpu, indirect_y(cpu));
+}
+
+void bit(struct Cpu6510* cpu, u8 value)
+{
+	u8 result = cpu->acc & value;
+
+	//bits 6 and 7 of operand(value) are put into SR (V,N)
+	cpu_affect_flag(cpu, (value >> 7), FLAG_N);
+	cpu_affect_flag(cpu, (value >> 6), FLAG_V);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+}
+
+void bit_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	bit(cpu, value);
+}
+
+void bit_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	bit(cpu, value);
 }
 
 void bpl(struct Cpu6510* cpu)
