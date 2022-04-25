@@ -67,6 +67,7 @@ void asl_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void asla(struct Cpu6510* cpu);
 
 void bpl(struct Cpu6510* cpu);
+void clc(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);

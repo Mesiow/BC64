@@ -135,6 +135,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x11: ora_indir_y(cpu); break;
 		case 0x15: ora_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x16: asl_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x18: clc(cpu); break;
 		case 0x19: ora_abs(cpu, absolute_y(cpu)); break;
 		case 0x1D: ora_abs(cpu, absolute_x(cpu)); break;
 		case 0x1E: asl_abs(cpu, absolute_x(cpu)); break;
@@ -262,6 +263,11 @@ void bpl(struct Cpu6510* cpu)
 	}
 }
 
+void clc(struct Cpu6510* cpu)
+{
+	cpu_clear_flag(cpu, FLAG_C);
+}
+
 u8 immediate(struct Cpu6510* cpu)
 {
 	return cpu_fetch_u8(cpu);
@@ -292,13 +298,29 @@ u16 absolute(struct Cpu6510* cpu)
 
 u16 absolute_x(struct Cpu6510* cpu)
 {
-	u16 address = cpu_fetch_u16(cpu) + cpu->x;
+	u8 lo = cpu_fetch_u8(cpu);
+	u8 hi = cpu_fetch_u8(cpu);
+
+	u16 address = ((hi << 8) | lo) + cpu->x;
+
+	//if we crossed a page boundary add a cycle
+	if ((address & 0xFF00) != (hi << 8))
+		cpu->cycles += 1;
+
 	return address;
 }
 
 u16 absolute_y(struct Cpu6510* cpu)
 {
-	u16 address = cpu_fetch_u16(cpu) + cpu->y;
+	u8 lo = cpu_fetch_u8(cpu);
+	u8 hi = cpu_fetch_u8(cpu);
+
+	u16 address = ((hi << 8) | lo) + cpu->y;
+
+	//if we crossed a page boundary add a cycle
+	if ((address & 0xFF00) != (hi << 8))
+		cpu->cycles += 1;
+
 	return address;
 }
 
@@ -316,9 +338,15 @@ u8 indirect_x(struct Cpu6510* cpu)
 u8 indirect_y(struct Cpu6510* cpu)
 {
 	u8 zeropage_vector = cpu_fetch_u8(cpu);
-	u16 effective_address = cpu_read_u16(cpu, zeropage_vector) + cpu->y;
-
+	u8 lo = cpu_read_u8(cpu, zeropage_vector);
+	u8 hi = cpu_read_u8(cpu, zeropage_vector + 1);
+	
+	u16 effective_address = ((hi << 8) | lo) + cpu->y;
 	u8 value = cpu_read_u8(cpu, effective_address);
+
+	//if we crossed a page boundary add a cycle
+	if ((effective_address & 0xFF00) != (hi << 8))
+		cpu->cycles += 1;
 
 	return value;
 }
