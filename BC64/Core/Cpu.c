@@ -162,6 +162,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x41: eor_indir_x(cpu); break;
 		case 0x45: eor_zpg(cpu, zeropage(cpu)); break;
 		case 0x46: lsr_zpg(cpu, zeropage(cpu)); break;
+		case 0x48: pha(cpu); break;
 		case 0x49: eor_imm(cpu); break;
 		case 0x4A: lsra(cpu); break;
 		case 0x4D: eor_abs(cpu, absolute(cpu)); break;
@@ -225,6 +226,11 @@ void plp(struct Cpu6510* cpu)
 {
 	pop_u8(cpu, &cpu->sr);
 	cpu->sr &= 0xCF; //break flag and bit 5 ignored
+}
+
+void pha(struct Cpu6510* cpu)
+{
+	push_u8(cpu, cpu->acc);
 }
 
 void ora(struct Cpu6510* cpu, u8 value)

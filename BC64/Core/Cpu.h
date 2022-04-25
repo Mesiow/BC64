@@ -54,6 +54,7 @@ void rts(struct Cpu6510* cpu);
 void rti(struct Cpu6510* cpu);
 void php(struct Cpu6510* cpu);
 void plp(struct Cpu6510* cpu);
+void pha(struct Cpu6510* cpu);
 
 void ora(struct Cpu6510* cpu, u8 value);
 void ora_imm(struct Cpu6510* cpu);
