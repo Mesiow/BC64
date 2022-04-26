@@ -178,14 +178,19 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x60: rts(cpu); break;
 		case 0x61: adc_indir_x(cpu); break;
 		case 0x65: adc_zpg(cpu, zeropage(cpu)); break;
+		case 0x66: ror_zpg(cpu, zeropage(cpu)); break;
 		case 0x69: adc_imm(cpu); break;
+		case 0x6A: rora(cpu); break;
 		case 0x6C: jmp_ind(cpu); break;
 		case 0x6D: adc_abs(cpu, absolute(cpu)); break;
+		case 0x6E: ror_abs(cpu, absolute(cpu)); break;
 		case 0x70: branch(cpu, cpu_get_flag(cpu, FLAG_V)); break;
 		case 0x71: adc_indir_y(cpu); break;
 		case 0x75: adc_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x76: ror_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x79: adc_abs(cpu, absolute_y(cpu)); break;
 		case 0x7D: adc_abs(cpu, absolute_x(cpu)); break;
+		case 0x7E: ror_abs(cpu, absolute_x(cpu)); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
@@ -553,6 +558,48 @@ void adc_indir_x(struct Cpu6510* cpu)
 void adc_indir_y(struct Cpu6510* cpu)
 {
 	adc(cpu, indirect_y(cpu));
+}
+
+void ror(struct Cpu6510* cpu, u8* value)
+{
+	u8 val = *value;
+
+	u8 lsb = val & 0x1;
+	u8 carry = cpu_get_flag(cpu, FLAG_C);
+
+	val >>= 1;
+	
+	if (carry)
+		val |= (1 << 7);
+	else
+		val &= ~(1 << 7);
+
+	cpu_affect_flag(cpu, cpu_is_signed(val), FLAG_N);
+	cpu_affect_flag(cpu, val == 0, FLAG_Z);
+	cpu_affect_flag(cpu, lsb, FLAG_C);
+
+	*value = val;
+}
+
+void ror_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	ror(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, abs_address);
+}
+
+void ror_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	ror(cpu, &value);
+
+	cpu_write_mem_u8(cpu, value, zpg_address);
+}
+
+void rora(struct Cpu6510* cpu)
+{
+	ror(cpu, &cpu->acc);
 }
 
 void branch(struct Cpu6510* cpu, u8 condition)

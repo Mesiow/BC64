@@ -106,6 +106,11 @@ void adc_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void adc_indir_x(struct Cpu6510* cpu);
 void adc_indir_y(struct Cpu6510* cpu);
 
+void ror(struct Cpu6510* cpu, u8* value);
+void ror_abs(struct Cpu6510* cpu, u16 abs_address);
+void ror_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void rora(struct Cpu6510* cpu);
+
 
 void branch(struct Cpu6510* cpu, u8 condition);
 void clc(struct Cpu6510* cpu);
