@@ -176,11 +176,37 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x5D: eor_abs(cpu, absolute_x(cpu)); break;
 		case 0x5E: lsr_abs(cpu, absolute_x(cpu)); break;
 		case 0x60: rts(cpu); break;
+		case 0x61: adc_indir_x(cpu); break;
+		case 0x65: adc_zpg(cpu, zeropage(cpu)); break;
+		case 0x69: adc_imm(cpu); break;
 		case 0x6C: jmp_ind(cpu); break;
+		case 0x6D: adc_abs(cpu, absolute(cpu)); break;
+		case 0x70: branch(cpu, cpu_get_flag(cpu, FLAG_V)); break;
+		case 0x71: adc_indir_y(cpu); break;
+		case 0x75: adc_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x79: adc_abs(cpu, absolute_y(cpu)); break;
+		case 0x7D: adc_abs(cpu, absolute_x(cpu)); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
 			break;
+	}
+}
+
+void cpu_handle_interrupts(struct Cpu6510* cpu)
+{
+	u8 irq_enabled = cpu_get_flag(cpu, FLAG_I) == 0;
+	if (irq_enabled) {
+		push_u16(cpu, cpu->pc);
+
+		cpu->sr |= (1 << 5);
+		cpu_clear_flag(cpu, FLAG_B);
+		cpu_set_flag(cpu, FLAG_I);
+
+		push_u8(cpu, cpu->sr);
+		
+		u16 address = cpu_read_u16(cpu, IRQ_VECTOR);
+		cpu->pc = address;
 	}
 }
 
@@ -487,6 +513,46 @@ void lsr_zpg(struct Cpu6510* cpu, u8 zpg_address)
 void lsra(struct Cpu6510* cpu)
 {
 	lsr(cpu, &cpu->acc);
+}
+
+void adc(struct Cpu6510* cpu, u8 value)
+{
+	u8 carry = cpu_get_flag(cpu, FLAG_C);
+	u8 result = cpu->acc + value + carry;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+	cpu_affect_flag(cpu, cpu_carry_occured_u8(cpu->acc, value, carry), FLAG_C);
+	cpu_affect_flag(cpu, cpu_overflow_from_add_u8(cpu->acc, value, carry), FLAG_V);
+
+	cpu->acc = result;
+}
+
+void adc_imm(struct Cpu6510* cpu)
+{
+	adc(cpu, immediate(cpu));
+}
+
+void adc_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	adc(cpu, value);
+}
+
+void adc_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	adc(cpu, value);
+}
+
+void adc_indir_x(struct Cpu6510* cpu)
+{
+	adc(cpu, indirect_x(cpu));
+}
+
+void adc_indir_y(struct Cpu6510* cpu)
+{
+	adc(cpu, indirect_y(cpu));
 }
 
 void branch(struct Cpu6510* cpu, u8 condition)

@@ -46,6 +46,7 @@ u8 cpu_read_u8(struct Cpu6510* cpu, u16 address);
 
 u8 cpu_clock(struct Cpu6510* cpu);
 void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
+void cpu_handle_interrupts(struct Cpu6510* cpu);
 
 //instructions
 void brk(struct Cpu6510* cpu);
@@ -98,10 +99,19 @@ void lsr_abs(struct Cpu6510* cpu, u16 abs_address);
 void lsr_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void lsra(struct Cpu6510* cpu);
 
+void adc(struct Cpu6510* cpu, u8 value);
+void adc_imm(struct Cpu6510* cpu);
+void adc_abs(struct Cpu6510* cpu, u16 abs_address);
+void adc_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void adc_indir_x(struct Cpu6510* cpu);
+void adc_indir_y(struct Cpu6510* cpu);
+
+
 void branch(struct Cpu6510* cpu, u8 condition);
 void clc(struct Cpu6510* cpu);
 void sec(struct Cpu6510* cpu);
 void cli(struct Cpu6510* cpu);
+void sei(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);
