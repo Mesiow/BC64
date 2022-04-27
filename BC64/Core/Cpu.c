@@ -191,6 +191,13 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x79: adc_abs(cpu, absolute_y(cpu)); break;
 		case 0x7D: adc_abs(cpu, absolute_x(cpu)); break;
 		case 0x7E: ror_abs(cpu, absolute_x(cpu)); break;
+		case 0x81: store(cpu, cpu->acc, indirect_x(cpu)); break;
+		case 0x85: store(cpu, cpu->acc, zeropage(cpu)); break;
+		case 0x8D: store(cpu, cpu->acc, absolute(cpu)); break;
+		case 0x91: store(cpu, cpu->acc, indirect_y(cpu)); break;
+		case 0x95: store(cpu, cpu->acc, zeropage_x(cpu)); break;
+		case 0x99: store(cpu, cpu->acc, absolute_y(cpu)); break;
+		case 0x9D: store(cpu, cpu->acc, absolute_x(cpu)); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
@@ -309,12 +316,14 @@ void ora_abs(struct Cpu6510* cpu, u16 abs_address)
 
 void ora_indir_x(struct Cpu6510* cpu)
 {
-	ora(cpu, indirect_x(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_x(cpu));
+	ora(cpu, value);
 }
 
 void ora_indir_y(struct Cpu6510* cpu)
 {
-	ora(cpu, indirect_y(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_y(cpu));
+	ora(cpu, value);
 }
 
 void asl(struct Cpu6510* cpu, u8 *value)
@@ -381,12 +390,14 @@ void and_abs(struct Cpu6510* cpu, u16 abs_address)
 
 void and_indir_x(struct Cpu6510* cpu)
 {
-	and(cpu, indirect_x(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_x(cpu));
+	and(cpu, value);
 }
 
 void and_indir_y(struct Cpu6510* cpu)
 {
-	and(cpu, indirect_y(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_y(cpu));
+	and(cpu, value);
 }
 
 void bit(struct Cpu6510* cpu, u8 value)
@@ -476,12 +487,14 @@ void eor_abs(struct Cpu6510* cpu, u16 abs_address)
 
 void eor_indir_x(struct Cpu6510* cpu)
 {
-	eor(cpu, indirect_x(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_x(cpu));
+	eor(cpu, value);
 }
 
 void eor_indir_y(struct Cpu6510* cpu)
 {
-	eor(cpu, indirect_y(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_y(cpu));
+	eor(cpu, value);
 }
 
 void lsr(struct Cpu6510* cpu, u8* value)
@@ -552,12 +565,14 @@ void adc_zpg(struct Cpu6510* cpu, u8 zpg_address)
 
 void adc_indir_x(struct Cpu6510* cpu)
 {
-	adc(cpu, indirect_x(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_x(cpu)); 
+	adc(cpu, value);
 }
 
 void adc_indir_y(struct Cpu6510* cpu)
 {
-	adc(cpu, indirect_y(cpu));
+	u8 value = cpu_read_u8(cpu, indirect_y(cpu));
+	adc(cpu, value);
 }
 
 void ror(struct Cpu6510* cpu, u8* value)
@@ -600,6 +615,11 @@ void ror_zpg(struct Cpu6510* cpu, u8 zpg_address)
 void rora(struct Cpu6510* cpu)
 {
 	ror(cpu, &cpu->acc);
+}
+
+void store(struct Cpu6510* cpu, u8 reg, u16 address)
+{
+	cpu_write_mem_u8(cpu, reg, address);
 }
 
 void branch(struct Cpu6510* cpu, u8 condition)
@@ -696,31 +716,29 @@ u16 absolute_y(struct Cpu6510* cpu)
 	return address;
 }
 
-u8 indirect_x(struct Cpu6510* cpu)
+u16 indirect_x(struct Cpu6510* cpu)
 {
 	u8 zeropage_addr = cpu_fetch_u8(cpu);
 	u8 vector = cpu->x + zeropage_addr;
 
 	u16 effective_address = cpu_read_u16(cpu, vector);
-	u8 value = cpu_read_u8(cpu, effective_address);
 
-	return value;
+	return effective_address;
 }
 
-u8 indirect_y(struct Cpu6510* cpu)
+u16 indirect_y(struct Cpu6510* cpu)
 {
 	u8 zeropage_vector = cpu_fetch_u8(cpu);
 	u8 lo = cpu_read_u8(cpu, zeropage_vector);
 	u8 hi = cpu_read_u8(cpu, zeropage_vector + 1);
 	
 	u16 effective_address = ((hi << 8) | lo) + cpu->y;
-	u8 value = cpu_read_u8(cpu, effective_address);
 
 	//if we crossed a page boundary add a cycle
 	if ((effective_address & 0xFF00) != (hi << 8))
 		cpu->cycles += 1;
 
-	return value;
+	return effective_address;
 }
 
 void push_u16(struct Cpu6510* cpu, u16 value)

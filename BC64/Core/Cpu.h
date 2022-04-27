@@ -111,6 +111,7 @@ void ror_abs(struct Cpu6510* cpu, u16 abs_address);
 void ror_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void rora(struct Cpu6510* cpu);
 
+void store(struct Cpu6510* cpu, u8 reg, u16 address);
 
 void branch(struct Cpu6510* cpu, u8 condition);
 void clc(struct Cpu6510* cpu);
@@ -126,8 +127,8 @@ u8 zeropage_y(struct Cpu6510* cpu);
 u16 absolute(struct Cpu6510* cpu);
 u16 absolute_x(struct Cpu6510* cpu);
 u16 absolute_y(struct Cpu6510* cpu);
-u8 indirect_x(struct Cpu6510* cpu);
-u8 indirect_y(struct Cpu6510* cpu);
+u16 indirect_x(struct Cpu6510* cpu);
+u16 indirect_y(struct Cpu6510* cpu);
 
 
 void push_u16(struct Cpu6510* cpu, u16 value);
