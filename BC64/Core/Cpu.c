@@ -192,9 +192,12 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x7D: adc_abs(cpu, absolute_x(cpu)); break;
 		case 0x7E: ror_abs(cpu, absolute_x(cpu)); break;
 		case 0x81: store(cpu, cpu->acc, indirect_x(cpu)); break;
+		case 0x84: store(cpu, cpu->y, zeropage(cpu)); break;
 		case 0x85: store(cpu, cpu->acc, zeropage(cpu)); break;
+		case 0x8C: store(cpu, cpu->y, absolute(cpu)); break;
 		case 0x8D: store(cpu, cpu->acc, absolute(cpu)); break;
 		case 0x91: store(cpu, cpu->acc, indirect_y(cpu)); break;
+		case 0x94: store(cpu, cpu->y, zeropage_x(cpu)); break;
 		case 0x95: store(cpu, cpu->acc, zeropage_x(cpu)); break;
 		case 0x99: store(cpu, cpu->acc, absolute_y(cpu)); break;
 		case 0x9D: store(cpu, cpu->acc, absolute_x(cpu)); break;
