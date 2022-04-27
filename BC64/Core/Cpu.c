@@ -209,8 +209,28 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x99: store(cpu, cpu->acc, absolute_y(cpu)); break;
 		case 0x9A: transfer(cpu, cpu->x, &cpu->sp); break;
 		case 0x9D: store(cpu, cpu->acc, absolute_x(cpu)); break;
+		case 0xA0: load_imm(cpu, &cpu->y); break;
+		case 0xA1: load_mem(cpu, &cpu->acc, indirect_x(cpu)); break;
+		case 0xA2: load_imm(cpu, &cpu->x); break;
+		case 0xA4: load_mem(cpu, &cpu->y, zeropage(cpu)); break;
+		case 0xA5: load_mem(cpu, &cpu->acc, zeropage(cpu)); break;
+		case 0xA6: load_mem(cpu, &cpu->x, zeropage(cpu)); break;
 		case 0xA8: transfer(cpu, cpu->acc, &cpu->y); break;
+		case 0xA9: load_imm(cpu, &cpu->acc); break;
 		case 0xAA: transfer(cpu, cpu->acc, &cpu->x); break;
+		case 0xAC: load_mem(cpu, &cpu->y, absolute(cpu)); break;
+		case 0xAD: load_mem(cpu, &cpu->acc, absolute(cpu)); break;
+		case 0xAE: load_mem(cpu, &cpu->x, absolute(cpu)); break;
+		case 0xB0: branch(cpu, cpu_get_flag(cpu, FLAG_C)); break;
+		case 0xB1: load_mem(cpu, &cpu->acc, indirect_y(cpu)); break;
+		case 0xB4: load_mem(cpu, &cpu->y, zeropage_x(cpu)); break;
+		case 0xB5: load_mem(cpu, &cpu->acc, zeropage_x(cpu)); break;
+		case 0xB6: load_mem(cpu, &cpu->x, zeropage_y(cpu)); break;
+		case 0xB8: clv(cpu); break;
+		case 0xB9: load_mem(cpu, &cpu->acc, absolute_y(cpu)); break;
+		case 0xBC: load_mem(cpu, &cpu->y, absolute_x(cpu)); break;
+		case 0xBD: load_mem(cpu, &cpu->acc, absolute_x(cpu)); break;
+		case 0xBE: load_mem(cpu, &cpu->x, absolute_y(cpu)); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
@@ -643,6 +663,24 @@ void transfer(struct Cpu6510* cpu, u8 source_register, u8* dest_register)
 	cpu_affect_flag(cpu, source_register == 0, FLAG_Z);
 }
 
+void load_mem(struct Cpu6510* cpu, u8* dest_register, u16 address)
+{
+	u8 value = cpu_read_u8(cpu, address);
+	*dest_register = value;
+
+	cpu_affect_flag(cpu, cpu_is_signed(value), FLAG_N);
+	cpu_affect_flag(cpu, value == 0, FLAG_Z);
+}
+
+void load_imm(struct Cpu6510* cpu, u8* dest_register)
+{
+	u8 value = immediate(cpu);
+	*dest_register = value;
+
+	cpu_affect_flag(cpu, cpu_is_signed(value), FLAG_N);
+	cpu_affect_flag(cpu, value == 0, FLAG_Z);
+}
+
 void branch(struct Cpu6510* cpu, u8 condition)
 {
 	if (condition) {
@@ -686,6 +724,11 @@ void dey(struct Cpu6510* cpu)
 	cpu->y--;
 	cpu_affect_flag(cpu, cpu_is_signed(cpu->y), FLAG_N);
 	cpu_affect_flag(cpu, cpu->y == 0, FLAG_Z);
+}
+
+void clv(struct Cpu6510* cpu)
+{
+	cpu_clear_flag(cpu, FLAG_V);
 }
 
 u8 immediate(struct Cpu6510* cpu)
