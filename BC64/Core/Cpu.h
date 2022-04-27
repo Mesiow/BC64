@@ -112,6 +112,7 @@ void ror_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void rora(struct Cpu6510* cpu);
 
 void store(struct Cpu6510* cpu, u8 reg, u16 address);
+void transfer(struct Cpu6510* cpu, u8 source_register, u8* dest_register);
 
 void branch(struct Cpu6510* cpu, u8 condition);
 void clc(struct Cpu6510* cpu);

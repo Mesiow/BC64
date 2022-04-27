@@ -196,15 +196,21 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x84: store(cpu, cpu->y, zeropage(cpu)); break;
 		case 0x85: store(cpu, cpu->acc, zeropage(cpu)); break;
 		case 0x86: store(cpu, cpu->x, zeropage(cpu)); break;
+		case 0x8A: transfer(cpu, cpu->x, &cpu->acc); break;
 		case 0x8C: store(cpu, cpu->y, absolute(cpu)); break;
 		case 0x8D: store(cpu, cpu->acc, absolute(cpu)); break;
 		case 0x8E: store(cpu, cpu->x, absolute(cpu)); break;
+		case 0x90: branch(cpu, cpu_get_flag(cpu, FLAG_C) == 0); break;
 		case 0x91: store(cpu, cpu->acc, indirect_y(cpu)); break;
 		case 0x94: store(cpu, cpu->y, zeropage_x(cpu)); break;
 		case 0x95: store(cpu, cpu->acc, zeropage_x(cpu)); break;
 		case 0x96: store(cpu, cpu->x, zeropage_y(cpu)); break;
+		case 0x98: transfer(cpu, cpu->y, &cpu->acc); break;
 		case 0x99: store(cpu, cpu->acc, absolute_y(cpu)); break;
+		case 0x9A: transfer(cpu, cpu->x, &cpu->sp); break;
 		case 0x9D: store(cpu, cpu->acc, absolute_x(cpu)); break;
+		case 0xA8: transfer(cpu, cpu->acc, &cpu->y); break;
+		case 0xAA: transfer(cpu, cpu->acc, &cpu->x); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
@@ -627,6 +633,14 @@ void rora(struct Cpu6510* cpu)
 void store(struct Cpu6510* cpu, u8 reg, u16 address)
 {
 	cpu_write_mem_u8(cpu, reg, address);
+}
+
+void transfer(struct Cpu6510* cpu, u8 source_register, u8* dest_register)
+{
+	*dest_register = source_register;
+
+	cpu_affect_flag(cpu, cpu_is_signed(source_register), FLAG_N);
+	cpu_affect_flag(cpu, source_register == 0, FLAG_Z);
 }
 
 void branch(struct Cpu6510* cpu, u8 condition)
