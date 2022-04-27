@@ -188,6 +188,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x71: adc_indir_y(cpu); break;
 		case 0x75: adc_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x76: ror_zpg(cpu, zeropage_x(cpu)); break;
+		case 0x78: sei(cpu); break;
 		case 0x79: adc_abs(cpu, absolute_y(cpu)); break;
 		case 0x7D: adc_abs(cpu, absolute_x(cpu)); break;
 		case 0x7E: ror_abs(cpu, absolute_x(cpu)); break;
@@ -664,6 +665,13 @@ void cli(struct Cpu6510* cpu)
 void sei(struct Cpu6510* cpu)
 {
 	cpu_set_flag(cpu, FLAG_I);
+}
+
+void dey(struct Cpu6510* cpu)
+{
+	cpu->y--;
+	cpu_affect_flag(cpu, cpu_is_signed(cpu->y), FLAG_N);
+	cpu_affect_flag(cpu, cpu->y == 0, FLAG_Z);
 }
 
 u8 immediate(struct Cpu6510* cpu)

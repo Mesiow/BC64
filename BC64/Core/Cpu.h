@@ -118,6 +118,7 @@ void clc(struct Cpu6510* cpu);
 void sec(struct Cpu6510* cpu);
 void cli(struct Cpu6510* cpu);
 void sei(struct Cpu6510* cpu);
+void dey(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);
