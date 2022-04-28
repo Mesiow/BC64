@@ -251,14 +251,23 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0xDD: compare_mem(cpu, cpu->acc, absolute_x(cpu)); break;
 		case 0xDE: dec(cpu, absolute_x(cpu)); break;
 		case 0xE0: compare_imm(cpu, cpu->x); break;
+		case 0xE1: sbc_indir_x(cpu); break;
 		case 0xE4: compare_mem(cpu, cpu->x, zeropage(cpu)); break;
+		case 0xE5: sbc_zpg(cpu, zeropage(cpu)); break;
 		case 0xE6: inc(cpu, zeropage(cpu)); break;
 		case 0xE8: inx(cpu); break;
+		case 0xE9: sbc_imm(cpu); break;
 		case 0xEA: /*nop*/ break;
 		case 0xEC: compare_mem(cpu, cpu->x, absolute(cpu)); break;
+		case 0xED: sbc_abs(cpu, absolute(cpu)); break;
 		case 0xEE: inc(cpu, absolute(cpu)); break;
 		case 0xF0: branch(cpu, cpu_get_flag(cpu, FLAG_Z)); break;
+		case 0xF1: sbc_indir_y(cpu); break;
+		case 0xF5: sbc_zpg(cpu, zeropage_x(cpu)); break;
 		case 0xF6: inc(cpu, zeropage_x(cpu)); break;
+		case 0xF8: sed(cpu); break;
+		case 0xF9: sbc_abs(cpu, absolute_y(cpu)); break;
+		case 0xFD: sbc_abs(cpu, absolute_x(cpu)); break;
 		case 0xFE: inc(cpu, absolute_x(cpu)); break;
 
 		default:
@@ -637,6 +646,48 @@ void adc_indir_y(struct Cpu6510* cpu)
 	adc(cpu, value);
 }
 
+void sbc(struct Cpu6510* cpu, u8 value)
+{
+	u8 carry = cpu_get_flag(cpu, FLAG_C);
+	u8 result = cpu->acc + value + carry;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+	cpu_affect_flag(cpu, cpu_borrow_occured_u8(cpu->acc, value, carry), FLAG_C);
+	cpu_affect_flag(cpu, cpu_overflow_from_sub_u8(cpu->acc, value, carry), FLAG_V);
+
+	cpu->acc = result;
+}
+
+void sbc_imm(struct Cpu6510* cpu)
+{
+	sbc(cpu, immediate(cpu));
+}
+
+void sbc_abs(struct Cpu6510* cpu, u16 abs_address)
+{
+	u8 value = cpu_read_u8(cpu, abs_address);
+	sbc(cpu, value);
+}
+
+void sbc_zpg(struct Cpu6510* cpu, u8 zpg_address)
+{
+	u8 value = cpu_read_u8(cpu, zpg_address);
+	sbc(cpu, value);
+}
+
+void sbc_indir_x(struct Cpu6510* cpu)
+{
+	u8 value = cpu_read_u8(cpu, indirect_x(cpu));
+	sbc(cpu, value);
+}
+
+void sbc_indir_y(struct Cpu6510* cpu)
+{
+	u8 value = cpu_read_u8(cpu, indirect_y(cpu));
+	sbc(cpu, value);
+}
+
 void ror(struct Cpu6510* cpu, u8* value)
 {
 	u8 val = *value;
@@ -826,6 +877,11 @@ void clv(struct Cpu6510* cpu)
 void cld(struct Cpu6510* cpu)
 {
 	cpu_clear_flag(cpu, FLAG_D);
+}
+
+void sed(struct Cpu6510* cpu)
+{
+	cpu_set_flag(cpu, FLAG_D);
 }
 
 u8 immediate(struct Cpu6510* cpu)

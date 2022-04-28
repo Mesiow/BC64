@@ -106,6 +106,13 @@ void adc_zpg(struct Cpu6510* cpu, u8 zpg_address);
 void adc_indir_x(struct Cpu6510* cpu);
 void adc_indir_y(struct Cpu6510* cpu);
 
+void sbc(struct Cpu6510* cpu, u8 value);
+void sbc_imm(struct Cpu6510* cpu);
+void sbc_abs(struct Cpu6510* cpu, u16 abs_address);
+void sbc_zpg(struct Cpu6510* cpu, u8 zpg_address);
+void sbc_indir_x(struct Cpu6510* cpu);
+void sbc_indir_y(struct Cpu6510* cpu);
+
 void ror(struct Cpu6510* cpu, u8* value);
 void ror_abs(struct Cpu6510* cpu, u16 abs_address);
 void ror_zpg(struct Cpu6510* cpu, u8 zpg_address);
@@ -133,6 +140,7 @@ void iny(struct Cpu6510* cpu);
 void inx(struct Cpu6510* cpu);
 void clv(struct Cpu6510* cpu);
 void cld(struct Cpu6510* cpu);
+void sed(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);
