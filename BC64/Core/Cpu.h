@@ -12,6 +12,15 @@
 #define NMI_VECTOR 0xFFFA
 #define IRQ_VECTOR 0xFFFE
 
+struct Cpu6510TestMemory {
+	u8 *memory;
+};
+
+void load_cpu_test_rom(struct Cpu6510* cpu, const char* path);
+void cpu_free_test(struct Cpu6510* cpu);
+void cpu_test_write_u8(struct Cpu6510* cpu, u8 value, u16 address);
+u8 cpu_test_read_u8(struct Cpu6510* cpu, u16 address);
+
 struct Cpu6510 {
 	u8 acc;
 	u8 x;
@@ -22,6 +31,9 @@ struct Cpu6510 {
 
 	u8 cycles;
 	struct Memory* mem;
+
+	u8 all_suite_test_enabled;
+	struct Cpu6510TestMemory test;
 };
 
 void cpu_init(struct Cpu6510* cpu);
@@ -56,6 +68,7 @@ void rti(struct Cpu6510* cpu);
 void php(struct Cpu6510* cpu);
 void plp(struct Cpu6510* cpu);
 void pha(struct Cpu6510* cpu);
+void pla(struct Cpu6510* cpu);
 void jmp_abs(struct Cpu6510* cpu);
 void jmp_ind(struct Cpu6510* cpu);
 

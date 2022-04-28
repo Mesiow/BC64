@@ -20,8 +20,53 @@ static u8 cycle_lookup[0x100] = {
 	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2
 };
 
+void load_cpu_test_rom(struct Cpu6510* cpu, const char* path)
+{
+	cpu->all_suite_test_enabled = 1;
+	cpu->pc = 0xC000;
+
+	cpu->test.memory = malloc(0x10000 * sizeof(u8));
+	FILE* file = fopen(path, "rb");
+	if (file != NULL) {
+		//Determine rom size
+		fseek(file, 0, SEEK_END);
+		u16 file_size = ftell(file);
+		fseek(file, 0, SEEK_SET);
+
+		printf("test size: 0x%04X\n", file_size);
+
+		u8* temp = malloc(file_size);
+		if (temp != NULL && cpu->test.memory != NULL) {
+			fread(temp, sizeof(u8), file_size, file);
+			//AllSuiteA is a 48k rom
+			for (s32 i = 0; i < 0x4000; i++) {
+				cpu->test.memory[i + 0xC000] = temp[i];
+			}
+			free(temp);
+		}
+		fclose(file);
+	}
+}
+
+void cpu_free_test(struct Cpu6510* cpu)
+{
+	free(cpu->test.memory);
+}
+
+void cpu_test_write_u8(struct Cpu6510* cpu, u8 value, u16 address)
+{
+	cpu->test.memory[address] = value;
+}
+
+u8 cpu_test_read_u8(struct Cpu6510* cpu, u16 address)
+{
+	return cpu->test.memory[address];
+}
+
 void cpu_init(struct Cpu6510* cpu)
 {
+	cpu->test.memory = NULL;
+	cpu->all_suite_test_enabled = 0;
 	cpu->acc = 0x0;
 	cpu->x = 0x0;
 	cpu->y = 0x0;
@@ -54,7 +99,10 @@ void cpu_affect_flag(struct Cpu6510* cpu, u8 condition, u8 flags)
 
 void cpu_write_mem_u8(struct Cpu6510* cpu, u8 value, u16 address)
 {
-	mem_write_u8(cpu->mem, value, address);
+	if (cpu->all_suite_test_enabled)
+		cpu_test_write_u8(cpu, value, address);
+	else
+		mem_write_u8(cpu->mem, value, address);
 }
 
 u8 cpu_get_flag(struct Cpu6510* cpu, u8 flag)
@@ -97,6 +145,13 @@ u8 cpu_borrow_occured_u8(u8 op1, u8 op2, u8 carry)
 
 u16 cpu_fetch_u16(struct Cpu6510* cpu)
 {
+	if (cpu->all_suite_test_enabled) {
+		u8 lo = cpu_test_read_u8(cpu, cpu->pc++);
+		u8 hi = cpu_test_read_u8(cpu, cpu->pc++);
+
+		return ((hi << 8) | lo);
+	}
+
 	u8 lo = mem_read_u8(cpu->mem, cpu->pc++);
 	u8 hi = mem_read_u8(cpu->mem, cpu->pc++);
 
@@ -105,6 +160,13 @@ u16 cpu_fetch_u16(struct Cpu6510* cpu)
 
 u16 cpu_read_u16(struct Cpu6510* cpu, u16 address)
 {
+	if (cpu->all_suite_test_enabled) {
+		u8 lo = cpu_test_read_u8(cpu, address);
+		u8 hi = cpu_test_read_u8(cpu, address + 1);
+
+		return ((hi << 8) | lo);
+	}
+
 	u8 lo = mem_read_u8(cpu->mem, address);
 	u8 hi = mem_read_u8(cpu->mem, address + 1);
 
@@ -113,19 +175,33 @@ u16 cpu_read_u16(struct Cpu6510* cpu, u16 address)
 
 u8 cpu_fetch_u8(struct Cpu6510* cpu)
 {
+	if (cpu->all_suite_test_enabled) {
+		return cpu_test_read_u8(cpu, cpu->pc++);
+	}
+
 	u8 data = mem_read_u8(cpu->mem, cpu->pc++);
 	return data;
 }
 
 u8 cpu_read_u8(struct Cpu6510* cpu, u16 address)
 {
+	if (cpu->all_suite_test_enabled) {
+		return cpu_test_read_u8(cpu, address);
+	}
+
 	u8 data = mem_read_u8(cpu->mem, address);
 	return data;
 }
 
 u8 cpu_clock(struct Cpu6510* cpu)
 {
-	u8 opcode = cpu_read_u8(cpu, cpu->pc++);
+	u8 opcode = 0;
+	if (cpu->all_suite_test_enabled) {
+		opcode = cpu_test_read_u8(cpu, cpu->pc++);
+	}
+	else
+		opcode = cpu_read_u8(cpu, cpu->pc++);
+
 	cpu->cycles = cycle_lookup[opcode];
 
 	cpu_execute_instruction(cpu, opcode);
@@ -193,6 +269,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x61: adc_indir_x(cpu); break;
 		case 0x65: adc_zpg(cpu, zeropage(cpu)); break;
 		case 0x66: ror_zpg(cpu, zeropage(cpu)); break;
+		case 0x68: pla(cpu); break;
 		case 0x69: adc_imm(cpu); break;
 		case 0x6A: rora(cpu); break;
 		case 0x6C: jmp_ind(cpu); break;
@@ -210,6 +287,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x84: store(cpu, cpu->y, zeropage(cpu)); break;
 		case 0x85: store(cpu, cpu->acc, zeropage(cpu)); break;
 		case 0x86: store(cpu, cpu->x, zeropage(cpu)); break;
+		case 0x88: dey(cpu); break;
 		case 0x8A: transfer(cpu, cpu->x, &cpu->acc); break;
 		case 0x8C: store(cpu, cpu->y, absolute(cpu)); break;
 		case 0x8D: store(cpu, cpu->acc, absolute(cpu)); break;
@@ -357,6 +435,14 @@ void plp(struct Cpu6510* cpu)
 void pha(struct Cpu6510* cpu)
 {
 	push_u8(cpu, cpu->acc);
+}
+
+void pla(struct Cpu6510* cpu)
+{
+	pop_u8(cpu, &cpu->acc);
+
+	cpu_affect_flag(cpu, cpu_is_signed(cpu->acc), FLAG_N);
+	cpu_affect_flag(cpu, cpu->acc == 0, FLAG_Z);
 }
 
 void jmp_abs(struct Cpu6510* cpu)
