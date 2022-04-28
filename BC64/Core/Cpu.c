@@ -1,9 +1,23 @@
 #include "Cpu.h"
 #include "Memory.h"
 
-static u8 cyc_lookup[0x100] = {
-	7, 6, 4, 5, 5
-
+static u8 cycle_lookup[0x100] = {
+	7, 6, 2, 2, 2, 3, 5, 2, 3, 2, 2, 2, 2, 4, 6, 2,
+	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2, 
+	6, 6, 2, 2, 3, 3, 5, 2, 4, 2, 2, 2, 4, 4, 6, 2, 
+	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2, 
+	6, 6, 2, 2, 2, 3, 5, 2, 3, 2, 2, 2, 3, 4, 6, 2,
+	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2,
+	6, 6, 2, 2, 2, 3, 5, 2, 4, 2, 2, 2, 5, 4, 6, 2,
+	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2,
+	2, 6, 2, 2, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 2, 
+	2, 6, 2, 2, 4, 4, 4, 2, 2, 5, 2, 2, 2, 5, 2, 2, 
+	2, 6, 2, 2, 3, 3, 3, 2, 2, 2, 2, 2, 4, 4, 4, 2, 
+	2, 5, 2, 2, 4, 4, 4, 2, 2, 4, 2, 2, 4, 4, 4, 2, 
+	2, 6, 2, 2, 3, 3, 5, 2, 2, 2, 2, 2, 4, 4, 6, 2, 
+	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2,
+	2, 6, 2, 2, 3, 3, 5, 2, 2, 2, 2, 2, 4, 4, 6, 2,
+	2, 5, 2, 2, 2, 4, 6, 2, 2, 4, 2, 2, 2, 4, 7, 2
 };
 
 void cpu_init(struct Cpu6510* cpu)
@@ -112,11 +126,11 @@ u8 cpu_read_u8(struct Cpu6510* cpu, u16 address)
 u8 cpu_clock(struct Cpu6510* cpu)
 {
 	u8 opcode = cpu_read_u8(cpu, cpu->pc++);
-	u8 cycles = cyc_lookup[opcode];
+	cpu->cycles = cycle_lookup[opcode];
 
 	cpu_execute_instruction(cpu, opcode);
 
-	return cycles;
+	return cpu->cycles;
 }
 
 void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
