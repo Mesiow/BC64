@@ -231,6 +231,35 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0xBC: load_mem(cpu, &cpu->y, absolute_x(cpu)); break;
 		case 0xBD: load_mem(cpu, &cpu->acc, absolute_x(cpu)); break;
 		case 0xBE: load_mem(cpu, &cpu->x, absolute_y(cpu)); break;
+		case 0xC0: compare_imm(cpu, cpu->y); break;
+		case 0xC1: compare_mem(cpu, cpu->acc, indirect_x(cpu)); break;
+		case 0xC4: compare_mem(cpu, cpu->y, zeropage(cpu)); break;
+		case 0xC5: compare_mem(cpu, cpu->acc, zeropage(cpu)); break;
+		case 0xC6: dec(cpu, zeropage(cpu)); break;
+		case 0xC8: iny(cpu); break;
+		case 0xC9: compare_imm(cpu, cpu->acc); break;
+		case 0xCA: dex(cpu); break;
+		case 0xCC: compare_mem(cpu, cpu->y, absolute(cpu)); break;
+		case 0xCD: compare_mem(cpu, cpu->acc, absolute(cpu)); break;
+		case 0xCE: dec(cpu, absolute(cpu)); break;
+		case 0xD0: branch(cpu, cpu_get_flag(cpu, FLAG_Z) == 0); break;
+		case 0xD1: compare_mem(cpu, cpu->acc, indirect_y(cpu)); break;
+		case 0xD5: compare_mem(cpu, cpu->acc, zeropage_x(cpu)); break;
+		case 0xD6: dec(cpu, zeropage_x(cpu)); break;
+		case 0xD8: cld(cpu); break;
+		case 0xD9: compare_mem(cpu, cpu->acc, absolute_y(cpu)); break;
+		case 0xDD: compare_mem(cpu, cpu->acc, absolute_x(cpu)); break;
+		case 0xDE: dec(cpu, absolute_x(cpu)); break;
+		case 0xE0: compare_imm(cpu, cpu->x); break;
+		case 0xE4: compare_mem(cpu, cpu->x, zeropage(cpu)); break;
+		case 0xE6: inc(cpu, zeropage(cpu)); break;
+		case 0xE8: inx(cpu); break;
+		case 0xEA: /*nop*/ break;
+		case 0xEC: compare_mem(cpu, cpu->x, absolute(cpu)); break;
+		case 0xEE: inc(cpu, absolute(cpu)); break;
+		case 0xF0: branch(cpu, cpu_get_flag(cpu, FLAG_Z)); break;
+		case 0xF6: inc(cpu, zeropage_x(cpu)); break;
+		case 0xFE: inc(cpu, absolute_x(cpu)); break;
 
 		default:
 			printf("Unimplemented instruction: 0x%02X\n", opcode);
@@ -681,6 +710,48 @@ void load_imm(struct Cpu6510* cpu, u8* dest_register)
 	cpu_affect_flag(cpu, value == 0, FLAG_Z);
 }
 
+void compare_mem(struct Cpu6510* cpu, u8 reg, u16 address)
+{
+	u8 value = cpu_read_u8(cpu, address);
+	u8 result = reg - value;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+	cpu_affect_flag(cpu, cpu_borrow_occured_u8(reg, value, 0), FLAG_C);
+}
+
+void compare_imm(struct Cpu6510* cpu, u8 reg)
+{
+	u8 value = immediate(cpu);
+	u8 result = reg - value;
+
+	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
+	cpu_affect_flag(cpu, result == 0, FLAG_Z);
+	cpu_affect_flag(cpu, cpu_borrow_occured_u8(reg, value, 0), FLAG_C);
+}
+
+void dec(struct Cpu6510* cpu, u16 address)
+{
+	u8 value = cpu_read_u8(cpu, address);
+	value--;
+
+	cpu_affect_flag(cpu, cpu_is_signed(value), FLAG_N);
+	cpu_affect_flag(cpu, value == 0, FLAG_Z);
+
+	cpu_write_mem_u8(cpu, value, address);
+}
+
+void inc(struct Cpu6510* cpu, u16 address)
+{
+	u8 value = cpu_read_u8(cpu, cpu, address);
+	value++;
+
+	cpu_affect_flag(cpu, cpu_is_signed(value), FLAG_N);
+	cpu_affect_flag(cpu, value == 0, FLAG_Z);
+
+	cpu_write_mem_u8(cpu, value, address);
+}
+
 void branch(struct Cpu6510* cpu, u8 condition)
 {
 	if (condition) {
@@ -726,9 +797,35 @@ void dey(struct Cpu6510* cpu)
 	cpu_affect_flag(cpu, cpu->y == 0, FLAG_Z);
 }
 
+void dex(struct Cpu6510* cpu)
+{
+	cpu->x--;
+	cpu_affect_flag(cpu, cpu_is_signed(cpu->x), FLAG_N);
+	cpu_affect_flag(cpu, cpu->x == 0, FLAG_Z);
+}
+
+void iny(struct Cpu6510* cpu)
+{
+	cpu->y++;
+	cpu_affect_flag(cpu, cpu_is_signed(cpu->y), FLAG_N);
+	cpu_affect_flag(cpu, cpu->y == 0, FLAG_Z);
+}
+
+void inx(struct Cpu6510* cpu)
+{
+	cpu->x++;
+	cpu_affect_flag(cpu, cpu_is_signed(cpu->x), FLAG_N);
+	cpu_affect_flag(cpu, cpu->x == 0, FLAG_Z);
+}
+
 void clv(struct Cpu6510* cpu)
 {
 	cpu_clear_flag(cpu, FLAG_V);
+}
+
+void cld(struct Cpu6510* cpu)
+{
+	cpu_clear_flag(cpu, FLAG_D);
 }
 
 u8 immediate(struct Cpu6510* cpu)

@@ -116,13 +116,23 @@ void transfer(struct Cpu6510* cpu, u8 source_register, u8* dest_register);
 void load_mem(struct Cpu6510* cpu, u8* dest_register, u16 address);
 void load_imm(struct Cpu6510* cpu, u8* dest_register);
 
+void compare_mem(struct Cpu6510* cpu, u8 reg, u16 address);
+void compare_imm(struct Cpu6510* cpu, u8 reg);
+
+void dec(struct Cpu6510* cpu, u16 address);
+void inc(struct Cpu6510* cpu, u16 address);
+
 void branch(struct Cpu6510* cpu, u8 condition);
 void clc(struct Cpu6510* cpu);
 void sec(struct Cpu6510* cpu);
 void cli(struct Cpu6510* cpu);
 void sei(struct Cpu6510* cpu);
 void dey(struct Cpu6510* cpu);
+void dex(struct Cpu6510* cpu);
+void iny(struct Cpu6510* cpu);
+void inx(struct Cpu6510* cpu);
 void clv(struct Cpu6510* cpu);
+void cld(struct Cpu6510* cpu);
 
 //addressing modes
 u8 immediate(struct Cpu6510* cpu);
