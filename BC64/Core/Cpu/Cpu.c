@@ -760,12 +760,13 @@ void adc_indir_y(struct Cpu6510* cpu)
 void sbc(struct Cpu6510* cpu, u8 value)
 {
 	u8 carry = cpu_get_flag(cpu, FLAG_C);
-	u8 result = cpu->acc + value + carry;
+	u8 temp_val = value ^ 0xFF; //flip bits
+	u8 result = cpu->acc + temp_val + carry;
 
 	cpu_affect_flag(cpu, cpu_is_signed(result), FLAG_N);
 	cpu_affect_flag(cpu, result == 0, FLAG_Z);
-	cpu_affect_flag(cpu, cpu_borrow_occured_u8(cpu->acc, value, carry), FLAG_C);
-	cpu_affect_flag(cpu, cpu_overflow_from_sub_u8(cpu->acc, value, carry), FLAG_V);
+	cpu_affect_flag(cpu, cpu_carry_occured_u8(cpu->acc, temp_val, carry), FLAG_C);
+	cpu_affect_flag(cpu, cpu_overflow_from_sub_u8(cpu->acc, temp_val, carry), FLAG_V);
 
 	cpu->acc = result;
 }
