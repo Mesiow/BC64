@@ -2,7 +2,7 @@
 
 void c64_init(struct C64* c64)
 {
-
+	mem_init(&c64->mem);
 }
 
 void c64_load_software(struct C64* c64, const char* kb_path, const char* char_set_path)
@@ -14,4 +14,9 @@ void c64_load_software(struct C64* c64, const char* kb_path, const char* char_se
 void c64_run(struct C64* c64)
 {
 
+}
+
+void c64_free(struct C64* c64)
+{
+	mem_free(&c64->mem);
 }
