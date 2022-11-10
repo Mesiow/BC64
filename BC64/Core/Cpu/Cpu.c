@@ -62,13 +62,13 @@ void cpu_free_test(struct Cpu6510* cpu)
 
 void cpu_test_write_u8(struct Cpu6510* cpu, u8 value, u16 address)
 {
+	cpu->test.memory[address] = value;
 	if (cpu->pc == 0x45C0) {
 		if (cpu_test_read_u8(cpu, 0x0210) == 0xFF)
 			printf("Test passed!\n");
 		else
 			printf("Test failed!\n");
 	}
-	cpu->test.memory[address] = value;
 }
 
 u8 cpu_test_read_u8(struct Cpu6510* cpu, u16 address)
@@ -268,6 +268,7 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 		case 0x4C: jmp_abs(cpu); break;
 		case 0x4D: eor_abs(cpu, absolute(cpu)); break;
 		case 0x4E: lsr_abs(cpu, absolute(cpu)); break;
+		case 0x50: branch(cpu, cpu_get_flag(cpu, FLAG_V) == 0); break;
 		case 0x51: eor_indir_y(cpu); break;
 		case 0x55: eor_zpg(cpu, zeropage_x(cpu)); break;
 		case 0x56: lsr_zpg(cpu, zeropage_x(cpu)); break;
@@ -423,8 +424,6 @@ void rti(struct Cpu6510* cpu)
 {
 	//pull sr
 	pop_u8(cpu, &cpu->sr);
-	cpu->sr &= 0xCF; //break flag and bit 5 ignored (similar to plp)
-
 	pop_u16(cpu, &cpu->pc);
 }
 
@@ -440,7 +439,6 @@ void php(struct Cpu6510* cpu)
 void plp(struct Cpu6510* cpu)
 {
 	pop_u8(cpu, &cpu->sr);
-	cpu->sr &= 0xCF; //break flag and bit 5 ignored
 }
 
 void pha(struct Cpu6510* cpu)
@@ -1079,23 +1077,24 @@ u16 indirect_y(struct Cpu6510* cpu)
 
 void push_u16(struct Cpu6510* cpu, u16 value)
 {
+
 	cpu->sp--;
-	cpu_write_mem_u8(cpu, ((value) >> 8) & 0xFF, cpu->sp);
+	cpu_write_mem_u8(cpu, ((value) >> 8) & 0xFF, 0x100 + cpu->sp);
 	cpu->sp--;
-	cpu_write_mem_u8(cpu, value & 0xFF, cpu->sp);
+	cpu_write_mem_u8(cpu, value & 0xFF, 0x100 + cpu->sp);
 }
 
 void push_u8(struct Cpu6510* cpu, u8 value)
 {
 	cpu->sp--;
-	cpu_write_mem_u8(cpu, value, cpu->sp);
+	cpu_write_mem_u8(cpu, value, 0x100 + cpu->sp);
 }
 
 void pop_u16(struct Cpu6510* cpu, u16 *reg)
 {
-	u8 lo = cpu_read_u8(cpu, cpu->sp);
+	u8 lo = cpu_read_u8(cpu, 0x100 + cpu->sp);
 	cpu->sp++;
-	u8 hi = cpu_read_u8(cpu, cpu->sp);
+	u8 hi = cpu_read_u8(cpu, 0x100 + cpu->sp);
 	cpu->sp++;
 
 	*reg = ((hi << 8) | lo);
@@ -1103,6 +1102,7 @@ void pop_u16(struct Cpu6510* cpu, u16 *reg)
 
 void pop_u8(struct Cpu6510* cpu, u8* reg)
 {
-	u8 value = cpu_read_u8(cpu, cpu->sp++);
+	u8 value = cpu_read_u8(cpu, 0x100 + cpu->sp);
+	cpu->sp++;
 	*reg = value;
 }
