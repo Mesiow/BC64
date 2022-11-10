@@ -21,18 +21,21 @@
     <ClCompile Include="Core\Util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Memory.c">
+    <ClCompile Include="Core\Memory\Memory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\C64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Cpu.c">
+    <ClCompile Include="Core\Cpu\Cpu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Log.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Memory.h">
+    <ClInclude Include="Core\Memory\Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Util.h">
@@ -41,7 +44,10 @@
     <ClInclude Include="Core\C64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Cpu.h">
+    <ClInclude Include="Core\Cpu\Cpu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
