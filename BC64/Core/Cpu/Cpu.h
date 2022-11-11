@@ -4,7 +4,6 @@
 #define FLAG_Z (1 << 1)
 #define FLAG_I (1 << 2) //irq disable
 #define FLAG_D (1 << 3) //bcd flag
-#define FLAG_B (1 << 4) //break
 #define FLAG_V (1 << 6)
 #define FLAG_N (1 << 7)
 
@@ -28,6 +27,7 @@ struct Cpu6510 {
 	u8 sr;
 	u16 sp;
 	u16 pc;
+	u8 brk;
 
 	u8 halt;
 	u8 cycles;
@@ -59,7 +59,9 @@ u8 cpu_read_u8(struct Cpu6510* cpu, u16 address);
 
 u8 cpu_clock(struct Cpu6510* cpu);
 void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
-void cpu_handle_interrupts(struct Cpu6510* cpu);
+void cpu_handle_irq(struct Cpu6510* cpu);
+void cpu_handle_nmi(struct Cpu6510* cpu);
+void cpu_interrupt(struct Cpu6510* cpu, u16 vector);
 
 //instructions
 void brk(struct Cpu6510* cpu);

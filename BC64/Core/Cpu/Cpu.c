@@ -25,7 +25,7 @@ static u8 cycle_lookup[0x100] = {
 void load_cpu_test_rom(struct Cpu6510* cpu, const char* path)
 {
 	cpu->all_suite_test_enabled = 1;
-	cpu->pc = 0x4000;
+	cpu->pc = 0x400;
 	cpu->acc = 0x0;
 	cpu->x = 0x0;
 	cpu->y = 0x0;
@@ -46,12 +46,15 @@ void load_cpu_test_rom(struct Cpu6510* cpu, const char* path)
 		if (temp != NULL && cpu->test.memory != NULL) {
 			fread(temp, sizeof(u8), file_size, file);
 			for (s32 i = 0; i < file_size; i++) {
-				cpu->test.memory[i + 0x4000] = temp[i];
+				cpu->test.memory[i + 0x0] = temp[i];
 			}
 
 			free(temp);
 		}
 		fclose(file);
+	}
+	else {
+		printf("File could not be loaded\n");
 	}
 }
 
@@ -84,7 +87,7 @@ void cpu_init(struct Cpu6510* cpu)
 	cpu->x = 0x0;
 	cpu->y = 0x0;
 	cpu->sr = 0x36;
-	cpu->sp = 0x1FF; //stack lives at 0x100 - 0x1FF
+	cpu->sp = 0xFF; //stack lives at 0x100 - 0x1FF
 	cpu->pc = 0;
 
 	cpu->halt = 0;
@@ -380,21 +383,32 @@ void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode)
 	}
 }
 
-void cpu_handle_interrupts(struct Cpu6510* cpu)
+void cpu_handle_irq(struct Cpu6510* cpu)
 {
 	u8 irq_enabled = cpu_get_flag(cpu, FLAG_I) == 0;
 	if (irq_enabled) {
-		push_u16(cpu, cpu->pc);
-
-		cpu->sr |= (1 << 5);
-		cpu_clear_flag(cpu, FLAG_B);
-		cpu_set_flag(cpu, FLAG_I);
-
-		push_u8(cpu, cpu->sr);
-		
-		u16 address = cpu_read_u16(cpu, IRQ_VECTOR);
-		cpu->pc = address;
+		cpu_interrupt(cpu, IRQ_VECTOR);
 	}
+}
+
+void cpu_handle_nmi(struct Cpu6510* cpu)
+{
+	cpu->brk = 0;
+	cpu_interrupt(cpu, NMI_VECTOR);
+}
+
+void cpu_interrupt(struct Cpu6510* cpu, u16 vector)
+{
+	push_u16(cpu, cpu->pc);
+
+	cpu->sr |= (1 << 5);
+	cpu->brk = 0;
+	push_u8(cpu, cpu->sr);
+
+	cpu_set_flag(cpu, FLAG_I);
+
+	u16 address = cpu_read_u16(cpu, vector);
+	cpu->pc = address;
 }
 
 void brk(struct Cpu6510* cpu)
@@ -404,7 +418,7 @@ void brk(struct Cpu6510* cpu)
 	push_u16(cpu, cpu->pc);
 
 	//push status reg as well
-	cpu_set_flag(cpu, FLAG_B);
+	cpu->brk = 1;
 	cpu_set_flag(cpu, FLAG_I);
 	push_u8(cpu, cpu->sr);
 }
@@ -430,7 +444,7 @@ void rti(struct Cpu6510* cpu)
 void php(struct Cpu6510* cpu)
 {
 	//push status reg with break flag and bit 5 set
-	cpu_set_flag(cpu, FLAG_B);
+	cpu->brk = 1;
 	cpu->sr |= (1 << 5);
 
 	push_u8(cpu, cpu->sr);
