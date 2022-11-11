@@ -397,6 +397,12 @@ void cpu_handle_nmi(struct Cpu6510* cpu)
 	cpu_interrupt(cpu, NMI_VECTOR);
 }
 
+void cpu_handle_reset(struct Cpu6510* cpu)
+{
+	cpu->brk = 0;
+	cpu_interrupt(cpu, RESET_VECTOR);
+}
+
 void cpu_interrupt(struct Cpu6510* cpu, u16 vector)
 {
 	push_u16(cpu, cpu->pc);
