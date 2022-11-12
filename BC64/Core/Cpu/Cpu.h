@@ -25,7 +25,7 @@ struct Cpu6510 {
 	u8 x;
 	u8 y;
 	u8 sr;
-	u16 sp;
+	u8 sp;
 	u16 pc;
 	u8 brk;
 
@@ -61,6 +61,7 @@ u8 cpu_clock(struct Cpu6510* cpu);
 void cpu_execute_instruction(struct Cpu6510* cpu, u8 opcode);
 void cpu_handle_irq(struct Cpu6510* cpu);
 void cpu_handle_nmi(struct Cpu6510* cpu);
+void cpu_handle_reset(struct Cpu6510* cpu);
 void cpu_interrupt(struct Cpu6510* cpu, u16 vector);
 
 //instructions
