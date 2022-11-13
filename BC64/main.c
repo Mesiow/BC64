@@ -1,34 +1,34 @@
 #include <stdio.h>
-#include "Core/Cpu/Cpu.h"
-#include "Core/Log.h"
+#include "Core\C64.h"
 
 int main(void) {
-
-	/*struct C64 c64;
+	struct C64 c64;
 	c64_init(&c64);
+	c64_load_software(&c64, "Software/c64_kernal_basic.bin",
+		"Software/characters.bin");
 
-	c64_free(&c64);*/
-	struct Cpu6510 cpu;
-	cpu_init(&cpu);
-	load_cpu_test_rom(&cpu, "test_roms/AllSuiteA.bin"); //test passed
-
-	while (1) {
-		cpu_clock(&cpu);
-		
-    	//cpu_handle_interrupts(&cpu);
-	}
-
-	cpu_free_test(&cpu);
-
-	//struct Log log;
-	//struct RegisterState state;
-	//open_log(&log, "test_roms/nestest.log");
-
-	//while (log_is_open(&log)) {
-	//parse_log(&log, &state);
+	c64_run(&c64);
+	
+	c64_free(&c64);
+	//load_cpu_test_rom(&cpu, "test_roms/AllSuiteA.bin"); //test passed
+	//load_cpu_test_rom(&cpu, "test_roms/single_tests/6502_functional_test.bin");
+	//u16 prev_pc = 0;
+	//while (1) {
+	//	cpu_clock(&cpu);
+	//	
+	//	/*if (prev_pc == cpu.pc) {
+	//		if (cpu.pc == 0x3469) {
+	//			printf("PASS");
+	//			break;
+	//		}
+	//		printf("FAIL (trapped at 0x%04X)", cpu.pc);
+	//		break;
+	//	}
+	//	prev_pc = cpu.pc;*/
+ //   	cpu_handle_irq(&cpu);
 	//}
 
-	//close_log(&log);
+	//cpu_free_test(&cpu);
 
 	return 0;
 }
