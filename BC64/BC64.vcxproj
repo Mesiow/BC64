@@ -145,6 +145,7 @@
     <ClCompile Include="Core\Cpu\Cpu.c" />
     <ClCompile Include="Core\Log.c" />
     <ClCompile Include="Core\Memory\Memory.c" />
+    <ClCompile Include="Core\Memory\Mmio.c" />
     <ClCompile Include="Core\Util.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="Core\Cpu\Cpu.h" />
     <ClInclude Include="Core\Log.h" />
     <ClInclude Include="Core\Memory\Memory.h" />
+    <ClInclude Include="Core\Memory\Mmio.h" />
     <ClInclude Include="Core\Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
