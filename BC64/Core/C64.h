@@ -1,8 +1,13 @@
 #include "Memory/Memory.h"
+#include "Cpu/Cpu.h"
 
 
 struct C64 {
 	struct Memory mem;
+	struct Mmio mmio;
+	struct Cpu6510 cpu;
+
+	u8 emu_running;
 };
 
 void c64_init(struct C64* c64);
