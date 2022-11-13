@@ -1,13 +1,15 @@
 #include "Memory.h"
 
-void mem_init(struct Memory* mem)
+void mem_init(struct Memory* mem, struct Mmio *mmio)
 {
-	mem->ram = malloc(0x10000 * sizeof(u8));
-	mem->kernal = malloc(0x2000 * sizeof(u8));
-	mem->basic_int = malloc(0x2000 * sizeof(u8));
+	mem->mmio = mmio;
+
+	mem->ram = (u8*)malloc(0x10000 * sizeof(u8));
+	mem->kernal = (u8*)malloc(0x2000 * sizeof(u8));
+	mem->basic_int = (u8*)malloc(0x2000 * sizeof(u8));
 
 	memset(mem->ram, 0x0, 0x10000);
-	memset(mem->stack, 0x0, 0xFF);
+	memset(mem->stack, 0x0, 0x100);
 	memset(mem->kernal, 0x0, 0x2000);
 	memset(mem->basic_int, 0x0, 0x2000);
 	memset(mem->chr1, 0x0, 0x800);

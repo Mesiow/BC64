@@ -79,10 +79,12 @@ u8 cpu_test_read_u8(struct Cpu6510* cpu, u16 address)
 	return cpu->test.memory[address];
 }
 
-void cpu_init(struct Cpu6510* cpu)
+void cpu_init(struct Cpu6510* cpu, struct Memory *mem)
 {
+	cpu->mem = mem;
+
 	cpu->test.memory = NULL;
-	//cpu->all_suite_test_enabled = 0;
+	cpu->all_suite_test_enabled = 0;
 	cpu->acc = 0x0;
 	cpu->x = 0x0;
 	cpu->y = 0x0;
@@ -1097,7 +1099,6 @@ u16 indirect_y(struct Cpu6510* cpu)
 
 void push_u16(struct Cpu6510* cpu, u16 value)
 {
-
 	cpu->sp--;
 	cpu_write_mem_u8(cpu, ((value) >> 8) & 0xFF, 0x100 + cpu->sp);
 	cpu->sp--;

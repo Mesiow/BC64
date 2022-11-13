@@ -32,7 +32,7 @@ struct Memory {
     struct Mmio* mmio;
 };
 
-void mem_init(struct Memory* mem);
+void mem_init(struct Memory* mem, struct Mmio *mmio);
 void mem_free(struct Memory* mem);
 void mem_load_firmware(struct Memory* mem, const char* path);
 void mem_load_chrrom(struct Memory* mem, const char* path);

@@ -37,7 +37,7 @@ struct Cpu6510 {
 	struct Cpu6510TestMemory test;
 };
 
-void cpu_init(struct Cpu6510* cpu);
+void cpu_init(struct Cpu6510* cpu, struct Memory *mem);
 void cpu_set_flag(struct Cpu6510 *cpu, u8 flags);
 void cpu_clear_flag(struct Cpu6510* cpu, u8 flags);
 void cpu_affect_flag(struct Cpu6510* cpu, u8 condition, u8 flags);
