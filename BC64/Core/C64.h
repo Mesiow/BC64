@@ -1,11 +1,15 @@
-#include "Memory/Memory.h"
-#include "Cpu/Cpu.h"
+#include "Memory\Memory.h"
+#include "Cpu\Cpu.h"
+#include "Video\Vic.h"
+#include "Memory\Cia.h"
 
 
 struct C64 {
 	struct Memory mem;
 	struct Mmio mmio;
 	struct Cpu6510 cpu;
+	struct VicII vic;
+	struct Cia2 cia;
 
 	u8 emu_running;
 };
