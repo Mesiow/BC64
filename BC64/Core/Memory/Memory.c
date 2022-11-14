@@ -94,7 +94,7 @@ void mem_write_u8(struct Memory* mem, u8 value, u16 address)
 	//If rom visible during write, just write to the
 	//underlying ram anyway
 	if (address <= 0x1) {
-		mmio_write_u8(mem->mmio, address, value);
+		mmio_write_device(mem->mmio, address, value);
 	}
 	else if (address >= 0x2 && address <= 0xFF) {
 		mem->ram[address & 0xFF] = value;
@@ -118,7 +118,7 @@ u8 mem_read_u8(struct Memory* mem, u16 address)
 	else if (address >= 0xD000 && address <= 0xDFFF) {
 		if (mmio_read_port_register(mem->mmio, CHAREN)) {
 			//io devices mapped
-			return mmio_read_u8(mem->mmio, address);
+			return mmio_read_device(mem->mmio, address);
 		}
 		else {
 			//character rom mapped
@@ -139,7 +139,7 @@ u8 mem_read_u8(struct Memory* mem, u16 address)
 	else {
 		//2 Important registers reside at address 0 and 1
 		if (address <= 0x1) {
-			mmio_read_u8(mem->mmio, address);
+			return mmio_read_device(mem->mmio, address);
 		}
 		//Zeropage
 		if (address >= 0x2 && address <= 0xFF) {
