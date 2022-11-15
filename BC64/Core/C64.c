@@ -8,7 +8,7 @@ void c64_init(struct C64* c64)
 	mem_init(&c64->mem, &c64->mmio);
 	cpu_init(&c64->cpu, &c64->mem);
 	vic_init(&c64->vic, &c64->mem);
-	cia_init(&c64->cia);
+	cia_init(&c64->cia, &c64->vic);
 }
 
 void c64_load_software(struct C64* c64, const char* kb_path, const char* char_set_path)
