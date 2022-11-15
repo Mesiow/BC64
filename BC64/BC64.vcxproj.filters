@@ -36,6 +36,12 @@
     <ClCompile Include="Core\Memory\Mmio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Video\Vic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Memory\Cia.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Memory\Memory.h">
@@ -54,6 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Memory\Mmio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Video\Vic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Memory\Cia.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
